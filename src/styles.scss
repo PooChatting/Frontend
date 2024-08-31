@@ -14,3 +14,12 @@ span{
 body{
     @apply p-0 m-0 min-h-screen
 }
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

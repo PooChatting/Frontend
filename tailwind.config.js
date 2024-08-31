@@ -10,7 +10,10 @@ theme = {
   'success': '#31a354',
   'warning': '#f8ed62',
   'grey': '#484b6a',
-  'textColor': '#111111',
+  'textColor': {
+    DEFAULT: '#111111',
+    'unimportant': '#333333'
+  },
 
 
   // Dark-mode colors
@@ -22,7 +25,10 @@ theme = {
   'dark-success': '#31a354',
   'dark-warning': '#f8ed62',
   'dark-grey': '#484b6a',
-  'dark-textColor': '#111111',
+  'dark-textColor': {
+    DEFAULT: '#111111',
+    'dark-unimportant': '#333333'
+  },
 }
 
 module.exports = {
