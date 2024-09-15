@@ -12,10 +12,10 @@ import { TextMessageComponent } from '../../components/text-message/text-message
 export class DirectMessagesComponent {
   messages: string[] = ["1", "2", "3","4","5","6"]
   
-  @HostListener('document:keyup', ['$event'])
-  onKeyUp (event: KeyboardEvent) {
-    if (event.key == "PrintScreen") {
+  // @HostListener('document:keyup', ['$event'])
+  // onKeyUp (event: KeyboardEvent) {
+  //   if (event.key == "PrintScreen") {
       
-    }
-  }
+  //   }
+  // }
 }
