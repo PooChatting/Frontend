@@ -4,7 +4,9 @@ theme = {
   // Light-mode colors
   'background': {
     DEFAULT: '#d2d3db',
+    'lighter': "#eeeffb",
     'light': "#e4e5f1",
+    'base': "#dadbe7",
     'dark': "#9394a5",
   },
   'success': '#31a354',

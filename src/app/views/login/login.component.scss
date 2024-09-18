@@ -13,14 +13,16 @@
 	@apply size-[400px];
 }
 .body {
-	@apply size-[400px] absolute rounded-b-xl bg-background-dark z-10;
+	@apply size-[400px] absolute rounded-b-xl z-10 bg-gradient-to-br from-background-dark to-background;
+	
 }
 .content {
 	@apply w-full h-[400px] z-[2] rounded-xl absolute flex flex-col justify-evenly;
 }
 .monkey {
-	@apply w-[400px] h-[232px] bg-background-dark relative z-[1] rounded-t-xl bg-contain bg-no-repeat 
+	@apply w-[400px] h-[232px] bg-background-dark relative z-[1] rounded-t-xl bg-no-repeat 
 		bg-center bg-[url("../../../assets/monkey.png")] bg-[length:234px_200px];
+		
 }
 .leftArm {
 	@apply h-[200px] w-full absolute top-[140px] mt-4 bg-contain bg-no-repeat 
@@ -66,7 +68,7 @@ input {
 	@apply text-[60%] text-red-600;
 }
 .changeType {
-	@apply w-[400px] text-[90%] text-center select-none cursor-pointer;
+	@apply w-[170px] text-[90%] text-center select-none cursor-pointer;
 }
 .spin {
 	@apply animate-[spinAnim_1s_1_forwards_ease-in-out];
