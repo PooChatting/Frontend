@@ -1,0 +1,74 @@
+@keyframes spinAnim {
+	0% {
+		transform: rotateY(0);
+	}
+	50% {
+		transform: rotateY(90deg);
+	}
+	100% {
+		transform: rotateY(0deg);
+	}
+}
+.bodies{
+	@apply size-[400px];
+}
+.body {
+	@apply size-[400px] absolute rounded-b-xl bg-background-dark z-10;
+}
+.content {
+	@apply w-full h-[400px] z-[2] rounded-xl absolute flex flex-col justify-evenly;
+}
+.monkey {
+	@apply w-[400px] h-[200px] bg-background-dark relative z-[1] rounded-t-xl bg-contain bg-no-repeat 
+		[background-position-x:center] bg-[url("../../../assets/monkey.png")];
+}
+.leftArm {
+	@apply h-[200px] w-full absolute top-[140px] bg-contain bg-no-repeat 
+		[background-position-x:center] transition-all duration-500 z-[1]
+		bg-[url("../../../assets/left.png")] left-20 rotate-45;
+}
+.rightArm {
+	@apply h-[200px] w-full absolute top-[140px] bg-contain bg-no-repeat 
+		[background-position-x:center] transition-all duration-500 z-[1]
+		bg-[url("../../../assets/right.png")] -left-20 -rotate-45;
+}
+.leftEye {
+	@apply transition-all size-2 rounded-[4px] absolute top-[100px] left-[163px] bg-white;
+}
+.rightEye {
+	@apply transition-all size-2 rounded-[4px] absolute top-[100px] left-[228px] bg-white;
+}
+.moveArm {
+	@apply top-0 left-0 rotate-0;
+}
+.divider {
+	@apply w-full h-[5px] absolute z-[3] bg-[linear-gradient(to_right,transparent,#484b6a,transparent)]
+}
+.name {
+	@apply block text-center
+}
+input {
+	@apply h-9 w-[346px] text-2xl outline-none border-none font-mono
+}
+.passwordMeter {
+	@apply w-[346px] h-1 flex ml-[27px];
+}
+.passwordMeter > * {
+	@apply h-1 w-3/12 border-r-[black] border-r-[solid];
+}
+.fourthBar {
+	@apply w-3/12 border-r-[none];
+}
+.button {
+	@apply text-center w-[200px] h-[50px] flex justify-center flex-col bg-background-light select-none cursor-pointer ml-[100px] rounded-[25px];
+}
+.correction {
+	@apply text-[60%] text-red-600;
+}
+.changeType {
+	@apply w-[400px] text-[90%] text-center select-none cursor-pointer;
+}
+.spin {
+	@apply animate-[spinAnim_1s_1_forwards_ease-in-out];
+}
+  
