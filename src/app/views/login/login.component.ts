@@ -1,69 +1,28 @@
-import { Component, HostListener} from '@angular/core';
+import { Component, ViewChild} from '@angular/core';
+import { MonkeyComponent } from "../../components/monkey/monkey.component";
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [],
+  imports: [MonkeyComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
+  @ViewChild(MonkeyComponent) monkeyComponent!: MonkeyComponent;
 
   emailValidatior = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
 
-  leftArmOverHead = false
-  rightArmOverHead = false
-  leftEyePosition = {top: "100px", left: "163px"}
-  rightEyePosition = {top: "100px", left: "228px"}
+  spinAnimation = false
+
+  loginInputIndex = "1"
+  registerInputIndex = "0"
   firstBarColor = "rgb(92, 92, 92)"
   secondBarColor = "rgb(92, 92, 92)"
   thirdBarColor = "rgb(92, 92, 92)"
   fourthBarColor = "rgb(92, 92, 92)"
-  spinAnimation = false
-  loginInputIndex = "1"
-  registerInputIndex = "0"
-  isInputingValues = false
-
-
-  @HostListener('document:mousemove', ['$event']) 
-  onMouseMove(e: MouseEvent) {
-    if (!this.isInputingValues) {
-      this.leftEyePosition.top = `${Math.floor(e.clientY / (window.innerHeight / 18)) + 101}px`
-      this.rightEyePosition.top = `${Math.floor(e.clientY / (window.innerHeight / 18)) + 101}px`
-      this.leftEyePosition.left = `${Math.floor(e.clientX / (window.innerWidth / 15)) + 156}px`
-      this.rightEyePosition.left = `${Math.floor(e.clientX / (window.innerWidth / 15)) + 221}px`
-    }
-  }
-
-  onFocus() {
-    this.isInputingValues = true
-    this.leftArmOverHead = true
-    this.rightArmOverHead = true
-  }
-
-  onFocusOut() {
-    this.isInputingValues = false
-    this.leftArmOverHead = false
-    this.rightArmOverHead = false
-    this.resetEyePosition()
-  }
-
-  onInput(text: string) {
-    this.isInputingValues = true
-    this.leftEyePosition.top = "103px"
-    this.rightEyePosition.top = "103px"
-    if (text.length >= 26) {
-      this.leftEyePosition.left = "168px"
-      this.rightEyePosition.left = "233px"
-    }
-    else {
-      this.leftEyePosition.left = `${160 + text.length * 0.3}px`
-      this.rightEyePosition.left = `${225 + text.length * 0.3}px`
-    }
-  }
 
   changeType() {
-    this.resetEyePosition()
     this.spinAnimation = true
     setTimeout(() => {
       this.loginInputIndex = this.loginInputIndex == "1" ? "0" : "1"
@@ -72,13 +31,6 @@ export class LoginComponent {
         this.spinAnimation = false
       }, 500);
     }, 500);
-  }
-
-  resetEyePosition() {
-    this.leftEyePosition.left = "163px"
-    this.rightEyePosition.left = "228px"
-    this.leftEyePosition.top = "100px"
-    this.rightEyePosition.top = "100px"
   }
 
   passwordInput(input: string) {

@@ -1,11 +1,6 @@
 <div class="flex w-screen h-screen justify-center items-center flex-col">
-    <div class="monkey" [class.spin]="spinAnimation">
-        <div [style.left]="leftEyePosition.left" [style.top]="leftEyePosition.top" class="leftEye"></div>
-        <div [style.left]="rightEyePosition.left" [style.top]="rightEyePosition.top" class="rightEye"></div>
-        <div [class.moveArm]="leftArmOverHead" class="leftArm"></div>
-        <div [class.moveArm]="rightArmOverHead" class="rightArm"></div>
-    </div>
-    
+    <app-monkey [spinAnimation]="spinAnimation"></app-monkey>
+
     <div class="bodies" style="position: relative;">
         <div class="body" [style.zIndex]="loginInputIndex" [class.spin]="spinAnimation">
             <div class="divider"></div>
@@ -13,11 +8,11 @@
                 <span class="name text-3xl">Login</span>
                 <div class="input">
                     <div class="text-xl">Email</div>
-                    <input #emailLogin type="text" (mousedown)="onInput(emailLogin.value)" (input)="onInput(emailLogin.value)" (focusout)="onFocusOut()">
+                    <input #emailLogin type="text" (mousedown)="monkeyComponent.onInput(emailLogin.value)" (input)="monkeyComponent.onInput(emailLogin.value)" (focusout)="monkeyComponent.onFocusOut()">
                 </div>
                 <div class="input">
                     <div class="text-xl">Password</div>
-                    <input #passwordLogin type="password" (focus)="onFocus()" (focusout)="onFocusOut()">
+                    <input #passwordLogin type="password" (focus)="monkeyComponent.onFocus()" (focusout)="monkeyComponent.onFocusOut()">
                 </div>
                 <div class="button" (click)="loginAccount(emailLogin.value, passwordLogin.value)">Click to login</div>
                 <div class="w-[400px] flex justify-center">
@@ -32,11 +27,11 @@
                 <span class="name text-3xl">Register</span>
                 <div class="input">
                     <div class="text-xl">Email</div>
-                    <input #emailRegister type="text" (input)="onInput(emailRegister.value)" (focusout)="onFocusOut()">
+                    <input #emailRegister type="text" (input)="monkeyComponent.onInput(emailRegister.value)" (focusout)="monkeyComponent.onFocusOut()">
                 </div>
                 <div class="input">
                     <div class="text-xl">Password</div>
-                    <input #passwordRegister type="password" (focus)="onFocus()" (focusout)="onFocusOut()"
+                    <input #passwordRegister type="password" (focus)="monkeyComponent.onFocus()" (focusout)="monkeyComponent.onFocusOut()"
                         (input)="passwordInput(passwordRegister.value)">
                     <div class="passwordMeter">
                         <div [style.backgroundColor]="firstBarColor" class="firstBar"></div>
@@ -47,7 +42,7 @@
                 </div>
                 <div class="input">
                     <div class="text-xl">Confirm password</div>
-                    <input #confirmPasswordRegister type="password" (focus)="onFocus()" (focusout)="onFocusOut()">
+                    <input #confirmPasswordRegister type="password" (focus)="monkeyComponent.onFocus()" (focusout)="monkeyComponent.onFocusOut()">
                 </div>
                 <div class="button"(click)="registerAccount(emailRegister.value, passwordRegister.value, confirmPasswordRegister.value)">Click to register</div>
                 <div class="w-[400px] flex justify-center">

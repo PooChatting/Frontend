@@ -19,30 +19,6 @@
 .content {
 	@apply w-full h-[400px] z-[2] rounded-xl absolute flex flex-col justify-evenly;
 }
-.monkey {
-	@apply w-[400px] h-[232px] bg-background-dark relative z-[1] rounded-t-xl bg-no-repeat 
-		bg-center bg-[url("../../../assets/monkey.png")] bg-[length:234px_200px];
-		
-}
-.leftArm {
-	@apply h-[200px] w-full absolute top-[140px] mt-4 bg-contain bg-no-repeat 
-		[background-position-x:center] transition-all duration-500 z-[1]
-		bg-[url("../../../assets/left.png")] left-20 rotate-45;
-}
-.rightArm {
-	@apply h-[200px] w-full absolute top-[140px] mt-4 bg-contain bg-no-repeat 
-		[background-position-x:center] transition-all duration-500 z-[1]
-		bg-[url("../../../assets/right.png")] -left-20 -rotate-45;
-}
-.leftEye {
-	@apply transition-all duration-75 size-2 rounded-[4px] absolute top-[100px] left-[163px] bg-white;
-}
-.rightEye {
-	@apply transition-all duration-75 size-2 rounded-[4px] absolute top-[100px] left-[228px] bg-white;
-}
-.moveArm {
-	@apply top-0 left-0 rotate-0;
-}
 .divider {
 	@apply w-full h-[5px] absolute z-[3] bg-[linear-gradient(to_right,transparent,#484b6a,transparent)]
 }
