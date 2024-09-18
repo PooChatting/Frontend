@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef} from '@angular/core';
 
 @Component({
   selector: 'app-login',
@@ -10,7 +10,6 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 export class LoginComponent {
 
   emailValidatior = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
-  mainParts! : ElementRef<any>[]
 
   leftArmOverHead = false
   rightArmOverHead = false
