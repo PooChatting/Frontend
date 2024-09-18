@@ -1,4 +1,4 @@
-import { Component, ElementRef} from '@angular/core';
+import { Component, ElementRef, HostListener} from '@angular/core';
 
 @Component({
   selector: 'app-login',
@@ -22,19 +22,34 @@ export class LoginComponent {
   spinAnimation = false
   loginInputIndex = "1"
   registerInputIndex = "0"
+  isInputingValues = false
+
+
+  @HostListener('document:mousemove', ['$event']) 
+  onMouseMove(e: MouseEvent) {
+    if (!this.isInputingValues) {
+      this.leftEyePosition.top = `${Math.floor(e.clientY / (window.innerHeight / 18)) + 85}px`
+      this.rightEyePosition.top = `${Math.floor(e.clientY / (window.innerHeight / 18)) + 85}px`
+      this.leftEyePosition.left = `${Math.floor(e.clientX / (window.innerWidth / 15)) + 156}px`
+      this.rightEyePosition.left = `${Math.floor(e.clientX / (window.innerWidth / 15)) + 221}px`
+    }
+  }
 
   onFocus() {
+    this.isInputingValues = true
     this.leftArmOverHead = true
     this.rightArmOverHead = true
   }
 
   onFocusOut() {
+    this.isInputingValues = false
     this.leftArmOverHead = false
     this.rightArmOverHead = false
     this.resetEyePosition()
   }
 
   onInput(text: string) {
+    this.isInputingValues = true
     this.leftEyePosition.top = "103px"
     this.rightEyePosition.top = "103px"
     if (text.length >= 26) {
