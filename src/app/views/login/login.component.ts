@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener} from '@angular/core';
+import { Component, HostListener} from '@angular/core';
 
 @Component({
   selector: 'app-login',
@@ -28,8 +28,8 @@ export class LoginComponent {
   @HostListener('document:mousemove', ['$event']) 
   onMouseMove(e: MouseEvent) {
     if (!this.isInputingValues) {
-      this.leftEyePosition.top = `${Math.floor(e.clientY / (window.innerHeight / 18)) + 85}px`
-      this.rightEyePosition.top = `${Math.floor(e.clientY / (window.innerHeight / 18)) + 85}px`
+      this.leftEyePosition.top = `${Math.floor(e.clientY / (window.innerHeight / 18)) + 101}px`
+      this.rightEyePosition.top = `${Math.floor(e.clientY / (window.innerHeight / 18)) + 101}px`
       this.leftEyePosition.left = `${Math.floor(e.clientX / (window.innerWidth / 15)) + 156}px`
       this.rightEyePosition.left = `${Math.floor(e.clientX / (window.innerWidth / 15)) + 221}px`
     }
