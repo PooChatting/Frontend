@@ -26,6 +26,10 @@
             <div class="content">
                 <span class="name text-3xl">Register</span>
                 <div class="input">
+                    <div class="text-xl">Username</div>
+                    <input #usernameRegister type="text" (input)="monkeyComponent.onInput(usernameRegister.value)" (focusout)="monkeyComponent.onFocusOut()">
+                </div>
+                <div class="input">
                     <div class="text-xl">Email</div>
                     <input #emailRegister type="text" (input)="monkeyComponent.onInput(emailRegister.value)" (focusout)="monkeyComponent.onFocusOut()">
                 </div>
@@ -44,7 +48,7 @@
                     <div class="text-xl">Confirm password</div>
                     <input #confirmPasswordRegister type="password" (focus)="monkeyComponent.onFocus()" (focusout)="monkeyComponent.onFocusOut()">
                 </div>
-                <div class="button"(click)="registerAccount(emailRegister.value, passwordRegister.value, confirmPasswordRegister.value)">Click to register</div>
+                <div class="button"(click)="registerAccount(usernameRegister.value, emailRegister.value, passwordRegister.value, confirmPasswordRegister.value)">Click to register</div>
                 <div class="w-[400px] flex justify-center">
                     <div class="changeType" (click)="changeType()">Already have an account?</div>
                 </div>

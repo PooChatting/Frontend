@@ -1,5 +1,5 @@
 <div class="flex flex-col">
-    <app-text-message *ngFor="let message of messages"></app-text-message>
+    <app-text-message *ngFor="let message of messages" [messageDto]="message"></app-text-message>
 </div>
 
-<app-text-input></app-text-input>
+<app-text-input (sendMessage)="sendMessage($event)"></app-text-input>

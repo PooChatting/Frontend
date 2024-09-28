@@ -1,5 +1,5 @@
 import { Observable, tap } from "rxjs";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpResponse} from "@angular/common/http";
 import { LoginDto } from "../../shared/dtos/LoginDto";
 import { AuthData } from "../../shared/dtos/AuthData";
 import { inject, Injectable } from "@angular/core";
@@ -19,16 +19,16 @@ export class AuthService {
       .post<AuthData>(
         `${environment.apiUrl}/auth/login`,
         dto,
-        {responseType: "json",})
+        {responseType: "json"})
       .pipe(tap((res) => this.saveJwtData(res)));
   }
 
-  register(dto: RegisterDto): Observable<AuthData> {
+  register(dto: RegisterDto): Observable<HttpResponse<AuthData>> {
     return this.httpClient
       .post<AuthData>(
         `${environment.apiUrl}/auth/register`,
         dto,
-        {responseType: "json",})
+        {responseType: "json", observe: "response"})
   }
   
   saveJwtData(jwtData: AuthData) {

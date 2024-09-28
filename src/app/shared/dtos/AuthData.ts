@@ -1,6 +1,4 @@
 export interface AuthData {
-  authToken: string;
-  refreshToken: string;
-  id: string;
-  roleId: number;
+  jwtToken: string;
+  id: number;
 }

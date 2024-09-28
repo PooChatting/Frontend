@@ -1,5 +1,10 @@
-import { Component, ViewChild} from '@angular/core';
+import { Component, inject, ViewChild} from '@angular/core';
 import { MonkeyComponent } from "../../components/monkey/monkey.component";
+import { RegisterDto } from '../../shared/dtos/RegisterDto';
+import { AuthService } from '../../services/account/auth.service';
+import { catchError, tap } from 'rxjs';
+import { LoginDto } from '../../shared/dtos/LoginDto';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -10,6 +15,9 @@ import { MonkeyComponent } from "../../components/monkey/monkey.component";
 })
 export class LoginComponent {
   @ViewChild(MonkeyComponent) monkeyComponent!: MonkeyComponent;
+
+  private authService = inject(AuthService)
+  private routerService = inject(Router)
 
   emailValidatior = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
 
@@ -54,38 +62,48 @@ export class LoginComponent {
   }
 
   lightUpPasswordBar(conditions: number) {
-    this.firstBarColor = conditions >= 1 ? "rgb(255, 0, 0)" : "rgb(92, 92, 92)"
+    this.firstBarColor = conditions >= 1 ? "red" : "rgb(92, 92, 92)"
     this.secondBarColor = conditions >= 2 ? "orange" : "rgb(92, 92, 92)"
     this.thirdBarColor = conditions >= 3 ? "greenyellow" : "rgb(92, 92, 92)"
     this.fourthBarColor = conditions == 4 ? "green" : "rgb(92, 92, 92)"
   }
 
-  registerAccount(email: string, password: string, confirmPassword: string) {
+  registerAccount(username: string, email: string, password: string, confirmPassword: string) {
     if (!this.emailValidatior.test(email)){
       // Send Notification
-      // "Not correct email"
+      console.log("Not correct email");
     }
     else if (password.length < 8 ){
       // Send Notification
-      // "Password must be at least 8 characters long"
+      console.log("Password must be at least 8 characters long");
     }
     else if (confirmPassword != password || confirmPassword == ""){
       // Send Notification
-      // "Passwords don't match"
+      console.log("Passwords don't match");
     }
     else{
-      // Send To Server
+      let dto : RegisterDto = {email: email, username: username, password: password, confirmPassword: confirmPassword}
+      this.authService.register(dto).pipe(
+        tap(x => {this.changeType()}), // Everything's ok
+        catchError(async (err) => console.log(err.error))
+      ).subscribe()
     }
   }
 
   loginAccount(email: string, password: string){
+    console.log(this.authService.getJwtData());
+    
     // (Will propably scrap this if)
     if (email == "" || !this.emailValidatior.test(email) || password == "" || password.length < 8){
       // Send Notification
       // "Invalid login"
     }
     else{
-      // Send To Server
+      let dto : LoginDto = {email: email, password: password}
+      this.authService.login(dto).pipe(
+        tap(x => {}), // Everything's ok
+        catchError(async (err) => console.log(err.error))
+      ).subscribe()
     }
   }
 
