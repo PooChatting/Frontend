@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
 import { TextInputComponent } from '../../components/text-input/text-input.component';
 import { CommonModule } from '@angular/common';
 import { TextMessageComponent } from '../../components/text-message/text-message.component';
@@ -8,6 +8,7 @@ import { tap } from 'rxjs';
 import { MessageDto } from '../../shared/dtos/MessageDto';
 import { PostMessageDto } from "../../shared/dtos/PostMessageDto";
 import { MessageReciverService } from '../../services/messages/messageReciver.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-direct-messages',
@@ -15,28 +16,73 @@ import { MessageReciverService } from '../../services/messages/messageReciver.se
   imports: [CommonModule, TextInputComponent, TextMessageComponent],
   templateUrl: './direct-messages.component.html',
 })
+
 export class DirectMessagesComponent {
   inputBarHeight: number = 56
+  wasAtBottomOfPage: boolean = false
+  showMessagesToastr: number[] = []
+  messages: MessageDto[] = []
+  channelId: string = ""
+  firstTimeMessageChange: boolean = true
+
+  @ViewChildren('message') messageElements!: QueryList<any>;
 
   private messageService = inject(MessagesService)
   private activatedRoute = inject(ActivatedRoute)
+  private toastrService = inject(ToastrService)
 
   constructor(private messageReciver: MessageReciverService) {
     messageReciver.recivedMessage.asObservable().subscribe((value: any) => {
         this.messages.push(value)
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-          setTimeout(() => {
-            window.scrollTo(0,document.body.scrollHeight);
-          }, 20);
-        }
-        else{
-          // Show popup that there is new message
-        }
     });
   }
 
-  messages: MessageDto[] = []
-  channelId: string = ""
+  ngAfterViewInit() {
+    this.messageElements.changes.subscribe(_ => this.onItemElementsChanged(_));
+  }
+
+  onItemElementsChanged(el: any){
+    // this is called at start of component, when it's not needed
+    if (!this.firstTimeMessageChange) {
+      let lastMessage: MessageDto = el.last.messageDto as MessageDto
+
+      if (this.wasAtBottomOfPage) {
+        window.scrollTo(0,document.body.scrollHeight);
+        this.wasAtBottomOfPage = false
+      }
+      else{
+        // Trim message to 40 characters
+        if (lastMessage.messageText.length > 40) {
+          lastMessage.messageText = lastMessage.messageText.substring(0, 40) + "..."
+        }
+        
+        // Show toastr and save it's id
+        this.showMessagesToastr.push(this.toastrService.info(lastMessage.messageText, lastMessage.authorName, {disableTimeOut: true}).toastId)
+        
+        // If there is too mush toastrs remove oldest
+        if (this.showMessagesToastr.length > 3) {
+          this.toastrService.clear(this.showMessagesToastr[0])
+          this.showMessagesToastr.shift()
+        }
+      }
+    }
+    this.firstTimeMessageChange = false
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onScroll(event: Event) {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+      this.wasAtBottomOfPage = true
+      // Clear every toastr
+      for (let x = 0; x < this.showMessagesToastr.length; x++){
+        this.toastrService.clear(this.showMessagesToastr[x])
+      }
+      this.showMessagesToastr = []
+    }
+    else{
+      this.wasAtBottomOfPage = false
+    }
+  }
 
   ngOnInit(){
     this.messageReciver.connect()
@@ -66,4 +112,6 @@ export class DirectMessagesComponent {
       
   //   }
   // }
+
+  
 }

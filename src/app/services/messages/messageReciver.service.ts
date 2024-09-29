@@ -38,7 +38,7 @@ export class MessageReciverService {
       });
       
       this.hubConnection.start()
-        .then(() => {console.log('connection started'); this.hubConnection!.invoke("ConnectUser");})
+        .then(() => {console.log('connection started')})
         .catch((err) => console.log('error while establishing signalr connection: ' + err));
     }
 

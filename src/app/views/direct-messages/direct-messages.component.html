@@ -1,6 +1,6 @@
 
 <div class="flex flex-col relative" [style]="{'padding-top': (inputBarHeight+24)+'px', 'top': '-'+(inputBarHeight+24)+'px'}">
-    <app-text-message *ngFor="let message of messages" [messageDto]="message"></app-text-message>
+    <app-text-message #message *ngFor="let message of messages" [messageDto]="message"></app-text-message>
 </div>
 
 <app-text-input (inputHeight)="inputBarHeight = $event" (sendMessage)="sendMessage($event)"></app-text-input>
