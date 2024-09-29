@@ -1,1 +1,58 @@
-<p>login works!</p>
+<div class="flex w-screen h-screen justify-center items-center flex-col">
+    <app-monkey [spinAnimation]="spinAnimation"></app-monkey>
+
+    <div class="bodies" style="position: relative;">
+        <div class="body" [style.zIndex]="loginInputIndex" [class.spin]="spinAnimation">
+            <div class="divider"></div>
+            <div class="content">
+                <span class="name text-3xl">Login</span>
+                <div class="input">
+                    <div class="text-xl">Email</div>
+                    <input #emailLogin type="text" (mousedown)="monkeyComponent.onInput(emailLogin.value)" (input)="monkeyComponent.onInput(emailLogin.value)" (focusout)="monkeyComponent.onFocusOut()">
+                </div>
+                <div class="input">
+                    <div class="text-xl">Password</div>
+                    <input #passwordLogin type="password" (focus)="monkeyComponent.onFocus()" (focusout)="monkeyComponent.onFocusOut()">
+                </div>
+                <div class="button" (click)="loginAccount(emailLogin.value, passwordLogin.value)">Click to login</div>
+                <div class="w-[400px] flex justify-center">
+                    <div class="changeType" (click)="changeType()">Don't have an account?</div>
+                </div>
+            </div>
+        </div>
+        
+        <div #register class="body" [style.zIndex]="registerInputIndex" [class.spin]="spinAnimation">
+            <div class="divider"></div>
+            <div class="content">
+                <span class="name text-3xl">Register</span>
+                <div class="input">
+                    <div class="text-xl">Username</div>
+                    <input #usernameRegister type="text" (input)="monkeyComponent.onInput(usernameRegister.value)" (focusout)="monkeyComponent.onFocusOut()">
+                </div>
+                <div class="input">
+                    <div class="text-xl">Email</div>
+                    <input #emailRegister type="text" (input)="monkeyComponent.onInput(emailRegister.value)" (focusout)="monkeyComponent.onFocusOut()">
+                </div>
+                <div class="input">
+                    <div class="text-xl">Password</div>
+                    <input #passwordRegister type="password" (focus)="monkeyComponent.onFocus()" (focusout)="monkeyComponent.onFocusOut()"
+                        (input)="passwordInput(passwordRegister.value)">
+                    <div class="passwordMeter">
+                        <div [style.backgroundColor]="firstBarColor" class="firstBar"></div>
+                        <div [style.backgroundColor]="secondBarColor"  class="secondBar"></div>
+                        <div [style.backgroundColor]="thirdBarColor" class="thirdBar"></div>
+                        <div [style.backgroundColor]="fourthBarColor"  class="fourthBar"></div>
+                    </div>
+                </div>
+                <div class="input">
+                    <div class="text-xl">Confirm password</div>
+                    <input #confirmPasswordRegister type="password" (focus)="monkeyComponent.onFocus()" (focusout)="monkeyComponent.onFocusOut()">
+                </div>
+                <div class="button"(click)="registerAccount(usernameRegister.value, emailRegister.value, passwordRegister.value, confirmPasswordRegister.value)">Click to register</div>
+                <div class="w-[400px] flex justify-center">
+                    <div class="changeType" (click)="changeType()">Already have an account?</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
