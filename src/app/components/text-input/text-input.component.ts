@@ -10,15 +10,18 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './text-input.component.scss'
 })
 export class TextInputComponent {
-  textInputHeight: string = "56"
+  textInputHeight: number = 56
   textareaValue: string = ""
   @Output() sendMessage = new EventEmitter<string>();
+  @Output() inputHeight = new EventEmitter<number>();
 
   messageChange(event: Event){
     let textArea = event.target as HTMLTextAreaElement
     textArea.style.height = "40px"
     textArea.style.height = textArea.scrollHeight + "px"
-    this.textInputHeight = (textArea.scrollHeight + 16).toString()
+    this.textInputHeight = (textArea.scrollHeight + 16)
+    this.inputHeight.emit(this.textInputHeight)
+    
   }
 
   @HostListener('document:keypress', ['$event'])
@@ -26,6 +29,8 @@ export class TextInputComponent {
     if(!event.shiftKey && event.key == "Enter"){
       this.sendMessage.emit(this.textareaValue)
       this.textareaValue = ""
+      this.textInputHeight = 56
+      this.inputHeight.emit(this.textInputHeight)
       event.preventDefault();
     }
   }
