@@ -1,0 +1,7 @@
+
+.icon-pencil:before { content: '\e800'; } /* '' */
+.icon-pin:before { content: '\e801'; } /* '' */
+.icon-heart--empty:before { content: '\e802'; } /* '' */
+.icon-heart--filled:before { content: '\e803'; } /* '' */
+.icon-trash-empty:before { content: '\e80c'; } /* '' */
+.icon-docs:before { content: '\f0c5'; } /* '' */

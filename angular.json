@@ -30,6 +30,7 @@
               "src/assets"
             ],
             "styles": [
+              "src/icons/css/fontello.css",
               "src/styles.scss"
             ],
             "scripts": [],

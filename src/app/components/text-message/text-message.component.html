@@ -1,4 +1,4 @@
-<div class="w-[calc(100%-5rem)] h-fit mx-10 px-1 my-2 flex hover:bg-background-light rounded-md">
+<div class="w-[calc(100%-5rem)] h-fit mx-10 px-1 my-2 flex hover:bg-background-light rounded-md relative" (mouseenter)="buttonsVisible = true" (mouseleave)="buttonsVisible = false">
     <img src="https://preview.redd.it/cigar-cougar-nicotines-people-to-death-v0-67rlfmy803mc1.png?width=640&crop=smart&auto=webp&s=4c9c2f84735ad4f548b95d14eb4e627105f31ef4" class="w-10 h-10 mr-3 mt-[3px] rounded-full">
     <div class="flex flex-col items-start">
         <div>
@@ -6,5 +6,12 @@
             <span class="text-textColor-unimportant font-light">{{messageDto.publication}}</span>
         </div>
         <span class="break-all text-left">{{messageDto.messageText}}</span>
+    </div>
+    <div class="bg-grey rounded-lg w-40 h-8 absolute -right-2 -top-2 flex" [ngClass]="{'hidden': !buttonsVisible}">
+        <app-icon-button [icon]="'icon-pencil'"></app-icon-button>
+        <app-icon-button [icon]="'icon-pin'"></app-icon-button>
+        <app-icon-button [icon]="'icon-heart--empty'"></app-icon-button>
+        <app-icon-button [icon]="'icon-docs'"></app-icon-button>
+        <app-icon-button [icon]="'icon-trash-empty'"></app-icon-button>
     </div>
 </div>

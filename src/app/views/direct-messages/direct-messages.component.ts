@@ -19,11 +19,10 @@ import { ToastrService } from 'ngx-toastr';
 
 export class DirectMessagesComponent {
   inputBarHeight: number = 56
-  wasAtBottomOfPage: boolean = false
+  wasAtBottomOfPage: boolean = true
   showMessagesToastr: number[] = []
   messages: MessageDto[] = []
   channelId: string = ""
-  firstTimeMessageChange: boolean = true
 
   @ViewChildren('message') messageElements!: QueryList<any>;
 
@@ -42,31 +41,27 @@ export class DirectMessagesComponent {
   }
 
   onItemElementsChanged(el: any){
-    // this is called at start of component, when it's not needed
-    if (!this.firstTimeMessageChange) {
-      let lastMessage: MessageDto = el.last.messageDto as MessageDto
+    let lastMessage: MessageDto = el.last.messageDto as MessageDto
 
-      if (this.wasAtBottomOfPage) {
-        window.scrollTo(0,document.body.scrollHeight);
-        this.wasAtBottomOfPage = false
+    if (this.wasAtBottomOfPage) {
+      window.scrollTo(0,document.body.scrollHeight);
+      this.wasAtBottomOfPage = false
+    }
+    else{
+      // Trim message to 40 characters
+      if (lastMessage.messageText.length > 40) {
+        lastMessage.messageText = lastMessage.messageText.substring(0, 40) + "..."
       }
-      else{
-        // Trim message to 40 characters
-        if (lastMessage.messageText.length > 40) {
-          lastMessage.messageText = lastMessage.messageText.substring(0, 40) + "..."
-        }
-        
-        // Show toastr and save it's id
-        this.showMessagesToastr.push(this.toastrService.info(lastMessage.messageText, lastMessage.authorName, {disableTimeOut: true}).toastId)
-        
-        // If there is too mush toastrs remove oldest
-        if (this.showMessagesToastr.length > 3) {
-          this.toastrService.clear(this.showMessagesToastr[0])
-          this.showMessagesToastr.shift()
-        }
+      
+      // Show toastr and save it's id
+      this.showMessagesToastr.push(this.toastrService.info(lastMessage.messageText, lastMessage.authorName, {disableTimeOut: true}).toastId)
+      
+      // If there is too mush toastrs remove oldest
+      if (this.showMessagesToastr.length > 3) {
+        this.toastrService.clear(this.showMessagesToastr[0])
+        this.showMessagesToastr.shift()
       }
     }
-    this.firstTimeMessageChange = false
   }
 
   @HostListener('window:scroll', ['$event'])
