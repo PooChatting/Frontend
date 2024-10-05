@@ -3,4 +3,9 @@
     <app-text-message #message *ngFor="let message of messages" [messageDto]="message"></app-text-message>
 </div>
 
-<app-text-input (inputHeight)="inputBarHeight = $event" (sendMessage)="sendMessage($event)"></app-text-input>
+<app-text-input 
+        (inputHeight)="inputBarHeight = $event"
+        (sendMessage)="sendMessage($event)"
+        class="fixed bottom-6 left-[2.5rem] w-[calc(100%-5rem)]"
+        >
+</app-text-input>
