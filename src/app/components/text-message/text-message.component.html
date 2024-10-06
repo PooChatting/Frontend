@@ -1,25 +1,35 @@
-<div class="w-[calc(100%-5rem)] h-fit mx-10 px-1 my-2 flex hover:bg-background-light rounded-md relative" (mouseenter)="buttonsVisible = true" (mouseleave)="buttonsVisible = false">
-    <img src="https://preview.redd.it/cigar-cougar-nicotines-people-to-death-v0-67rlfmy803mc1.png?width=640&crop=smart&auto=webp&s=4c9c2f84735ad4f548b95d14eb4e627105f31ef4" class="w-10 h-10 mr-3 mt-[3px] rounded-full">
-    <div class="flex flex-col items-start">
-        <div>
-            <span class="font-bold">{{messageDto.authorName}}</span>
-            <span class="text-textColor-unimportant font-light mx-3">{{messageDto.publication}}</span>
-            <span class="text-textColor-unimportant font-light" [ngClass]="{'hidden': !messageDto.wasEdited}">Edited</span>
+<div *ngIf="messageDto.messageTypeEnum == messageTextType; else showDeleted"> <!--  || 'Text'  -->
+    <div class="w-[calc(100%-5rem)] h-fit mx-10 px-1 my-2 flex hover:bg-background-light rounded-md relative" (mouseenter)="buttonsVisible = true" (mouseleave)="buttonsVisible = false">
+        <img src="https://preview.redd.it/cigar-cougar-nicotines-people-to-death-v0-67rlfmy803mc1.png?width=640&crop=smart&auto=webp&s=4c9c2f84735ad4f548b95d14eb4e627105f31ef4" class="w-10 h-10 mr-3 mt-[3px] rounded-full">
+        <div class="flex flex-col items-start">
+            <div>
+                <span class="font-bold">{{messageDto.authorName}}</span>
+                <span class="text-textColor-unimportant font-light mx-3">{{messageDto.publication}}</span>
+                <span class="text-textColor-unimportant font-light" [ngClass]="{'hidden': !messageDto.wasEdited}">Edited</span>
+            </div>
+            <span [ngClass]="{'hidden': isEditting}" class="break-all text-left">{{messageDto.messageText}}</span>
+            <app-text-input 
+                    [startText]="messageDto.messageText" 
+                    [showMediaBtns]="false" 
+                    [ngClass]="{'hidden': !isEditting}" 
+                    class="w-[calc(100vw-9.5rem)] rounded-lg bg-background-dark"
+                    (sendMessage)="MessageEditted($event)">
+                </app-text-input>
         </div>
-        <span [ngClass]="{'hidden': isEditting}" class="break-all text-left">{{messageDto.messageText}}</span>
-        <app-text-input 
-                [startText]="messageDto.messageText" 
-                [showMediaBtns]="false" 
-                [ngClass]="{'hidden': !isEditting}" 
-                class="w-[calc(100vw-9.5rem)] rounded-lg bg-background-dark"
-                (sendMessage)="MessageEditted($event)">
-            </app-text-input>
-    </div>
-    <div class="bg-grey rounded-lg w-fit h-8 absolute -right-2 -top-2 flex" [ngClass]="{'hidden': !buttonsVisible}">
-        <app-icon-button [ngClass]="{'hidden': !isUserMessageAuthor}" (clicked)="editMessage()" [icon]="'icon-pencil'"></app-icon-button>
-        <app-icon-button [icon]="'icon-pin'"></app-icon-button>
-        <app-icon-button [icon]="'icon-heart--empty'"></app-icon-button>
-        <app-icon-button [icon]="'icon-docs'"></app-icon-button>
-        <app-icon-button [ngClass]="{'hidden': !isUserMessageAuthor}" class="text-alert" [icon]="'icon-trash-empty'"></app-icon-button>
+        <div class="bg-grey rounded-lg w-fit h-8 absolute -right-2 -top-2 flex" [ngClass]="{'hidden': !buttonsVisible}">
+            <app-icon-button [ngClass]="{'hidden': !isUserMessageAuthor}" (clicked)="editMessage()" [icon]="'icon-pencil'"></app-icon-button>
+            <app-icon-button [icon]="'icon-pin'"></app-icon-button>
+            <app-icon-button [icon]="'icon-heart--empty'"></app-icon-button>
+            <app-icon-button [icon]="'icon-docs'"></app-icon-button>
+            <app-icon-button [ngClass]="{'hidden': !isUserMessageAuthor}" (clicked)="deleteMessage()" class="text-alert" [icon]="'icon-trash-empty'"></app-icon-button>
+        </div>
     </div>
 </div>
+
+<ng-template #showDeleted>
+    <div class="w-[calc(100%-5rem)] h-fit mx-10 px-1 my-2 flex hover:bg-background-light rounded-md relative justify-center">
+        <span class="font-bold">{{messageDto.authorName}}</span>
+        <span class="text-textColor-unimportant font-light mx-3">{{messageDto.messageText}}</span>
+        <span class="text-textColor-unimportant font-light">{{messageDto.publication}}</span>
+    </div>
+</ng-template>

@@ -2,6 +2,7 @@ import { EventEmitter, inject, Injectable, Output } from "@angular/core";
 import { MessageDto } from "../../shared/dtos/MessageDto";
 import * as signalR from '@microsoft/signalr';
 import { AuthService } from "../account/auth.service";
+import { messageTypeEnum } from "../../shared/enums/MessageTypeEnum";
 
 @Injectable({
   providedIn: 'root'
@@ -13,6 +14,7 @@ export class messageRSignalService {
 
     @Output() recivedMessage = new EventEmitter<MessageDto>();
     @Output() recivedEditedMessage = new EventEmitter<MessageDto>();
+    @Output() deletedMessage = new EventEmitter<MessageDto>();
 
     connect(): void {
       this.hubConnection = new signalR.HubConnectionBuilder()
@@ -33,12 +35,31 @@ export class messageRSignalService {
           id: msg.Id,
           messageText: msg.MessageText,
           publication: msg.Publication,
-          wasEdited: msg.WasEdited
+          wasEdited: msg.WasEdited,
+          messageTypeEnum: messageTypeEnum[msg.MessageTypeEnum as keyof typeof messageTypeEnum]
         }
         this.recivedEditedMessage.emit(msgModel)
       });
 
       this.hubConnection.on('ReceiveMessage', (message) => {
+        let msg = JSON.parse(message)
+        
+        let msgModel: MessageDto = {
+          authorId: msg.AuthorId,
+          authorProfile: "",
+          authorName: msg.AuthorName,
+          channelId: msg.ChannelId,
+          id: msg.Id,
+          messageText: msg.MessageText,
+          publication: msg.Publication,
+          wasEdited: msg.WasEdited,
+          messageTypeEnum: messageTypeEnum[msg.MessageTypeEnum as keyof typeof messageTypeEnum]
+        }
+        console.log(msgModel.messageTypeEnum);
+        this.recivedMessage.emit(msgModel)
+      });
+
+      this.hubConnection.on('deleteMessage', (message) => {
         let msg = JSON.parse(message)
         let msgModel: MessageDto = {
           authorId: msg.AuthorId,
@@ -48,9 +69,10 @@ export class messageRSignalService {
           id: msg.Id,
           messageText: msg.MessageText,
           publication: msg.Publication,
-          wasEdited: msg.WasEdited       
+          wasEdited: msg.WasEdited,
+          messageTypeEnum: messageTypeEnum[msg.MessageTypeEnum as keyof typeof messageTypeEnum]
         }
-        this.recivedMessage.emit(msgModel)
+        this.deletedMessage.emit(msgModel)
       });
       
       this.hubConnection.start()

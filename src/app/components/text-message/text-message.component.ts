@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, inject, Input, ViewChild, ViewContainerRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, EventEmitter, inject, Input, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { MessageDto } from '../../shared/dtos/MessageDto';
 import { IconButtonComponent } from "../icon-button/icon-button.component";
 import { CommonModule, formatDate } from '@angular/common';
@@ -7,6 +7,7 @@ import { PutMessageDto } from '../../shared/dtos/PutMessageDto';
 import { MessagesService } from '../../services/messages/messages.service';
 import { tap } from 'rxjs';
 import { AuthService } from '../../services/account/auth.service';
+import { messageTypeEnum } from '../../shared/enums/MessageTypeEnum';
 
 @Component({
   selector: 'app-text-message',
@@ -18,9 +19,13 @@ import { AuthService } from '../../services/account/auth.service';
 })
 export class TextMessageComponent {
   @Input({ required: true }) messageDto!: MessageDto
+  @Output() deleteMe = new EventEmitter<boolean>();
   buttonsVisible: boolean = false
   isEditting: boolean = false
   isUserMessageAuthor: boolean = false
+
+  messageDeletedType = messageTypeEnum.Deleted
+  messageTextType = messageTypeEnum.Text
   
   private messageService = inject(MessagesService)
   private authService = inject(AuthService)
@@ -68,6 +73,18 @@ export class TextMessageComponent {
         if(x.status == 200){
           this.messageDto.messageText = text;
           this.messageDto.wasEdited = true;
+          this.changeDetector.detectChanges();
+        }
+      })
+    ).subscribe()
+  }
+
+  deleteMessage(){
+    this.messageService.deleteMessage(this.messageDto.id).pipe(
+      tap(x=> {
+        if(x.status == 200){
+          this.messageDto.messageText = "Has deleted message";
+          this.messageDto.messageTypeEnum = messageTypeEnum.Deleted
           this.changeDetector.detectChanges();
         }
       })

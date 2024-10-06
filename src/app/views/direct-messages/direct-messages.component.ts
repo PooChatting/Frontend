@@ -33,8 +33,6 @@ export class DirectMessagesComponent {
   constructor(private messageRSignal: messageRSignalService) {
     messageRSignal.recivedEditedMessage.asObservable().subscribe((value) => {
       let messageIndex = this.messages.findIndex(x => x.id === value.id);
-      console.log(value);
-      
       if (messageIndex !== -1) {
         this.messages = this.messages.map((message, i) => 
           i === messageIndex ? { ...message = value} : message
@@ -43,6 +41,14 @@ export class DirectMessagesComponent {
     });
     messageRSignal.recivedMessage.asObservable().subscribe((value) => {
         this.messages.push(value)
+    });
+    messageRSignal.deletedMessage.asObservable().subscribe((value) => {
+      let messageIndex = this.messages.findIndex(x => x.id === value.id);
+      if (messageIndex !== -1) {
+        this.messages = this.messages.map((message, i) => 
+          i === messageIndex ? { ...message = value} : message
+        );
+      }
     });
   }
 

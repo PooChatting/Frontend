@@ -37,4 +37,11 @@ export class MessagesService {
         {responseType: "json", observe: 'response', headers: this.authHeader.getAuthenticationHeader()})
   }
 
+  deleteMessage(messageId: number) {
+    return this.httpClient
+      .delete(
+        `${environment.apiUrl}/message/${messageId.toString()}`,
+        {responseType: "json", observe: 'response', headers: this.authHeader.getAuthenticationHeader()})
+  }
+
 }
