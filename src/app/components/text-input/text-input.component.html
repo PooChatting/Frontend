@@ -1,15 +1,14 @@
 <div class="bg-background-dark w-full max-h-[50%] px-6 py-2 rounded-2xl" [style]="{'height': inputDiv.style.height}">
     <div class="flex-row flex items-center h-full">
-        <div class="w-10 mx-2 h-10 cursor-pointer">
+        <div class="w-10 mx-2 h-10 cursor-pointer" [ngClass]="{'hidden': !showMediaBtns}">
             <img class="rounded-full" src="https://cdns.iconmonstr.com/wp-content/releases/preview/2018/240/iconmonstr-plus-circle-thin.png">
         </div>
-        <div class="w-[calc(100%-8rem)] mx-2 h-full text-background-light text-left flex items-center">
-            <!-- <textarea [(ngModel)]="textareaValue" maxlength="2048" class="h-full max-h-[100%] w-full bg-background-dark outline-none text-2xl break resize-none" (input)="messageChange($event)"></textarea> -->
+        <div class="mx-2 h-full text-background-light text-left flex items-center" [ngClass]="showMediaBtns ? 'w-[calc(100%-8rem)]' : ' w-full'">
             <div #inputDiv
                 contenteditable="true" 
                 class="text-left break-all w-full bg-background-dark outline-none text-2xl"
                 (input)="messageChange(inputDiv)"></div>
         </div>
-        <div class="w-10 mx-2 h-10"></div>
+        <div class="w-10 mx-2 h-10" [ngClass]="{'hidden': !showMediaBtns}"></div>
     </div>
 </div>

@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+app-text-input{
+    @apply w-[calc(100vw-9.5rem)] rounded-lg bg-background-dark
+}

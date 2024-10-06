@@ -7,11 +7,12 @@ import { AuthService } from "../account/auth.service";
   providedIn: 'root'
 })
 
-export class MessageReciverService {
+export class messageRSignalService {
     private hubConnection: signalR.HubConnection | undefined;
     private authService = inject(AuthService)
 
     @Output() recivedMessage = new EventEmitter<MessageDto>();
+    @Output() recivedEditedMessage = new EventEmitter<MessageDto>();
 
     connect(): void {
       this.hubConnection = new signalR.HubConnectionBuilder()
@@ -21,7 +22,22 @@ export class MessageReciverService {
           accessTokenFactory: () => this.authService.getJwtData()!.jwtToken
         })
         .build();
-          
+
+      this.hubConnection.on('ReceiveEditedMessage', (message) => {
+        let msg = JSON.parse(message)
+        let msgModel: MessageDto = {
+          authorId: msg.AuthorId,
+          authorProfile: "",
+          authorName: msg.AuthorName,
+          channelId: msg.ChannelId,
+          id: msg.Id,
+          messageText: msg.MessageText,
+          publication: msg.Publication,
+          wasEdited: msg.WasEdited
+        }
+        this.recivedEditedMessage.emit(msgModel)
+      });
+
       this.hubConnection.on('ReceiveMessage', (message) => {
         let msg = JSON.parse(message)
         let msgModel: MessageDto = {
@@ -41,5 +57,4 @@ export class MessageReciverService {
         .then(() => {console.log('connection started')})
         .catch((err) => console.log('error while establishing signalr connection: ' + err));
     }
-
 }

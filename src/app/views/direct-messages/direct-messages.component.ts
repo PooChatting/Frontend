@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
 import { TextInputComponent } from '../../components/text-input/text-input.component';
 import { CommonModule } from '@angular/common';
 import { TextMessageComponent } from '../../components/text-message/text-message.component';
@@ -7,7 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { tap } from 'rxjs';
 import { MessageDto } from '../../shared/dtos/MessageDto';
 import { PostMessageDto } from "../../shared/dtos/PostMessageDto";
-import { MessageReciverService } from '../../services/messages/messageReciver.service';
+import { messageRSignalService } from '../../services/messages/messageRSignal.service';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
@@ -30,8 +30,18 @@ export class DirectMessagesComponent {
   private activatedRoute = inject(ActivatedRoute)
   private toastrService = inject(ToastrService)
 
-  constructor(private messageReciver: MessageReciverService) {
-    messageReciver.recivedMessage.asObservable().subscribe((value: any) => {
+  constructor(private messageRSignal: messageRSignalService) {
+    messageRSignal.recivedEditedMessage.asObservable().subscribe((value) => {
+      let messageIndex = this.messages.findIndex(x => x.id === value.id);
+      console.log(value);
+      
+      if (messageIndex !== -1) {
+        this.messages = this.messages.map((message, i) => 
+          i === messageIndex ? { ...message = value} : message
+        );
+      }
+    });
+    messageRSignal.recivedMessage.asObservable().subscribe((value) => {
         this.messages.push(value)
     });
   }
@@ -80,7 +90,7 @@ export class DirectMessagesComponent {
   }
 
   ngOnInit(){
-    this.messageReciver.connect()
+    this.messageRSignal.connect()
     this.getMessages()
   }
 
