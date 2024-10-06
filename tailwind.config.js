@@ -11,7 +11,8 @@ theme = {
   },
   'success': '#31a354',
   'warning': '#f8ed62',
-  'grey': '#484b6a',
+  'alert': '#ee0000',
+  'grey': '#6a6a6a',
   'textColor': {
     DEFAULT: '#111111',
     'unimportant': '#333333'

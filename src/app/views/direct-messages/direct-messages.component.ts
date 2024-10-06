@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
 import { TextInputComponent } from '../../components/text-input/text-input.component';
 import { CommonModule } from '@angular/common';
 import { TextMessageComponent } from '../../components/text-message/text-message.component';
@@ -7,7 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { tap } from 'rxjs';
 import { MessageDto } from '../../shared/dtos/MessageDto';
 import { PostMessageDto } from "../../shared/dtos/PostMessageDto";
-import { MessageReciverService } from '../../services/messages/messageReciver.service';
+import { messageRSignalService } from '../../services/messages/messageRSignal.service';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
@@ -19,11 +19,10 @@ import { ToastrService } from 'ngx-toastr';
 
 export class DirectMessagesComponent {
   inputBarHeight: number = 56
-  wasAtBottomOfPage: boolean = false
+  wasAtBottomOfPage: boolean = true
   showMessagesToastr: number[] = []
   messages: MessageDto[] = []
   channelId: string = ""
-  firstTimeMessageChange: boolean = true
 
   @ViewChildren('message') messageElements!: QueryList<any>;
 
@@ -31,8 +30,18 @@ export class DirectMessagesComponent {
   private activatedRoute = inject(ActivatedRoute)
   private toastrService = inject(ToastrService)
 
-  constructor(private messageReciver: MessageReciverService) {
-    messageReciver.recivedMessage.asObservable().subscribe((value: any) => {
+  constructor(private messageRSignal: messageRSignalService) {
+    messageRSignal.recivedEditedMessage.asObservable().subscribe((value) => {
+      let messageIndex = this.messages.findIndex(x => x.id === value.id);
+      console.log(value);
+      
+      if (messageIndex !== -1) {
+        this.messages = this.messages.map((message, i) => 
+          i === messageIndex ? { ...message = value} : message
+        );
+      }
+    });
+    messageRSignal.recivedMessage.asObservable().subscribe((value) => {
         this.messages.push(value)
     });
   }
@@ -42,31 +51,27 @@ export class DirectMessagesComponent {
   }
 
   onItemElementsChanged(el: any){
-    // this is called at start of component, when it's not needed
-    if (!this.firstTimeMessageChange) {
-      let lastMessage: MessageDto = el.last.messageDto as MessageDto
+    let lastMessage: MessageDto = el.last.messageDto as MessageDto
 
-      if (this.wasAtBottomOfPage) {
-        window.scrollTo(0,document.body.scrollHeight);
-        this.wasAtBottomOfPage = false
+    if (this.wasAtBottomOfPage) {
+      window.scrollTo(0,document.body.scrollHeight);
+      this.wasAtBottomOfPage = false
+    }
+    else{
+      // Trim message to 40 characters
+      if (lastMessage.messageText.length > 40) {
+        lastMessage.messageText = lastMessage.messageText.substring(0, 40) + "..."
       }
-      else{
-        // Trim message to 40 characters
-        if (lastMessage.messageText.length > 40) {
-          lastMessage.messageText = lastMessage.messageText.substring(0, 40) + "..."
-        }
-        
-        // Show toastr and save it's id
-        this.showMessagesToastr.push(this.toastrService.info(lastMessage.messageText, lastMessage.authorName, {disableTimeOut: true}).toastId)
-        
-        // If there is too mush toastrs remove oldest
-        if (this.showMessagesToastr.length > 3) {
-          this.toastrService.clear(this.showMessagesToastr[0])
-          this.showMessagesToastr.shift()
-        }
+      
+      // Show toastr and save it's id
+      this.showMessagesToastr.push(this.toastrService.info(lastMessage.messageText, lastMessage.authorName, {disableTimeOut: true}).toastId)
+      
+      // If there is too mush toastrs remove oldest
+      if (this.showMessagesToastr.length > 3) {
+        this.toastrService.clear(this.showMessagesToastr[0])
+        this.showMessagesToastr.shift()
       }
     }
-    this.firstTimeMessageChange = false
   }
 
   @HostListener('window:scroll', ['$event'])
@@ -85,7 +90,7 @@ export class DirectMessagesComponent {
   }
 
   ngOnInit(){
-    this.messageReciver.connect()
+    this.messageRSignal.connect()
     this.getMessages()
   }
 

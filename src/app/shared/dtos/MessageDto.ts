@@ -5,6 +5,6 @@ export interface MessageDto {
   authorProfile : string,
   channelId : number,
   messageText : string,
-  publication : Date,
-  wasEdited : number
+  publication : string,
+  wasEdited : boolean
 }

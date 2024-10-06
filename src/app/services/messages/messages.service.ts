@@ -5,6 +5,7 @@ import { MessageDto } from "../../shared/dtos/MessageDto";
 import { environment } from "../../../environments/environments";
 import { AuthHeader } from "../authenticationHeader.service";
 import { PostMessageDto } from "../../shared/dtos/PostMessageDto";
+import { PutMessageDto } from "../../shared/dtos/PutMessageDto";
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +28,13 @@ export class MessagesService {
       .post(
         `${environment.apiUrl}/message`, messageDto,
         {responseType: "json", headers: this.authHeader.getAuthenticationHeader()})
+  }
+  
+  putMessage(messageDto: PutMessageDto) {
+    return this.httpClient
+      .put(
+        `${environment.apiUrl}/message`, messageDto,
+        {responseType: "json", observe: 'response', headers: this.authHeader.getAuthenticationHeader()})
   }
 
 }

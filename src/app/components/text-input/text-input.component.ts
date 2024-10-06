@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, inject, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -10,28 +10,38 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './text-input.component.scss'
 })
 export class TextInputComponent {
-  textInputHeight: number = 56
-  textareaValue: string = ""
+  @ViewChild('inputDiv') inputDiv!: ElementRef;
+  @Input() showMediaBtns: boolean = true;
+  @Input() startText: string = "";
   @Output() sendMessage = new EventEmitter<string>();
   @Output() inputHeight = new EventEmitter<number>();
+  hasSentMessage: boolean = false
 
-  messageChange(event: Event){
-    let textArea = event.target as HTMLTextAreaElement
-    textArea.style.height = "40px"
-    textArea.style.height = textArea.scrollHeight + "px"
-    this.textInputHeight = (textArea.scrollHeight + 16)
-    this.inputHeight.emit(this.textInputHeight)
-    
+  ngAfterViewInit(){
+    this.inputDiv.nativeElement.innerHTML = this.startText
+  }
+
+  messageChange(element: HTMLDivElement){
+    this.inputHeight.emit(parseInt(element.style.height.split("px")[0]))
+    this.hasSentMessage = false
+  }
+
+  ngOnChanges() {
+    if (this.inputDiv != null) {
+      this.inputDiv.nativeElement.innerHTML = this.startText
+    }
   }
 
   @HostListener('document:keypress', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) { 
-    if(!event.shiftKey && event.key == "Enter"){
-      this.sendMessage.emit(this.textareaValue)
-      this.textareaValue = ""
-      this.textInputHeight = 56
-      this.inputHeight.emit(this.textInputHeight)
-      event.preventDefault();
+    if(!event.shiftKey && event.key == "Enter" && this.inputDiv.nativeElement.innerHTML != "" && this.inputDiv.nativeElement.innerHTML != this.startText){
+      if (!this.hasSentMessage) {
+        this.hasSentMessage = true
+        this.sendMessage.emit(this.inputDiv.nativeElement.innerHTML)
+        this.inputDiv.nativeElement.innerHTML = ""
+        this.inputHeight.emit(56)
+        event.preventDefault();
+      }
     }
   }
 }
