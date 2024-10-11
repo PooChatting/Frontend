@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
 import { TextInputComponent } from '../../components/text-input/text-input.component';
 import { CommonModule } from '@angular/common';
 import { TextMessageComponent } from '../../components/text-message/text-message.component';
@@ -9,6 +9,9 @@ import { MessageDto } from '../../shared/dtos/MessageDto';
 import { PostMessageDto } from "../../shared/dtos/PostMessageDto";
 import { messageRSignalService } from '../../services/messages/messageRSignal.service';
 import { ToastrService } from 'ngx-toastr';
+import { messageTypeEnum } from '../../shared/enums/MessageTypeEnum';
+import { PutMessageDto } from '../../shared/dtos/PutMessageDto';
+import { AuthService } from '../../services/account/auth.service';
 
 @Component({
   selector: 'app-direct-messages',
@@ -23,12 +26,13 @@ export class DirectMessagesComponent {
   showMessagesToastr: number[] = []
   messages: MessageDto[] = []
   channelId: string = ""
-
-  @ViewChildren('message') messageElements!: QueryList<any>;
+  userId: number = 0
+  @ViewChildren('message') messageElements!: QueryList<ElementRef<TextMessageComponent>>;
 
   private messageService = inject(MessagesService)
   private activatedRoute = inject(ActivatedRoute)
   private toastrService = inject(ToastrService)
+  private authService = inject(AuthService)
 
   constructor(private messageRSignal: messageRSignalService) {
     messageRSignal.recivedEditedMessage.asObservable().subscribe((value) => {
@@ -41,6 +45,18 @@ export class DirectMessagesComponent {
     });
     messageRSignal.recivedMessage.asObservable().subscribe((value) => {
         this.messages.push(value)
+        if (value.authorId != this.userId && !this.wasAtBottomOfPage) {
+          if (value.messageTypeEnum != messageTypeEnum.Text) {
+            this.addToastr(value, "warning")
+          }
+          else{
+            // Trim message to 40 characters
+            if (value.messageText.length > 40) {
+              value.messageText = value.messageText.substring(0, 40) + "..."
+            }
+            this.addToastr(value, "info")
+          }
+        }
     });
     messageRSignal.deletedMessage.asObservable().subscribe((value) => {
       let messageIndex = this.messages.findIndex(x => x.id === value.id);
@@ -48,41 +64,43 @@ export class DirectMessagesComponent {
         this.messages = this.messages.map((message, i) => 
           i === messageIndex ? { ...message = value} : message
         );
+        if (value.messageTypeEnum != messageTypeEnum.Text && !this.wasAtBottomOfPage && value.authorId != this.userId) {
+          this.addToastr(value, "warning")
+        }
       }
     });
   }
 
   ngAfterViewInit() {
-    this.messageElements.changes.subscribe(_ => this.onItemElementsChanged(_));
+    this.messageElements.changes.subscribe(_ => this.onItemElementsChanged());
   }
 
-  onItemElementsChanged(el: any){
-    let lastMessage: MessageDto = el.last.messageDto as MessageDto
-
+  onItemElementsChanged(){
     if (this.wasAtBottomOfPage) {
       window.scrollTo(0,document.body.scrollHeight);
       this.wasAtBottomOfPage = false
     }
-    else{
-      // Trim message to 40 characters
-      if (lastMessage.messageText.length > 40) {
-        lastMessage.messageText = lastMessage.messageText.substring(0, 40) + "..."
-      }
-      
-      // Show toastr and save it's id
-      this.showMessagesToastr.push(this.toastrService.info(lastMessage.messageText, lastMessage.authorName, {disableTimeOut: true}).toastId)
-      
-      // If there is too mush toastrs remove oldest
-      if (this.showMessagesToastr.length > 3) {
-        this.toastrService.clear(this.showMessagesToastr[0])
-        this.showMessagesToastr.shift()
-      }
+  }
+
+  addToastr(value: MessageDto, type: string){
+    switch (type) {
+      case "info":
+          this.showMessagesToastr.push(this.toastrService.info(value.messageText, value.authorName, {disableTimeOut: true}).toastId)
+        break;
+      case "warning":
+          this.showMessagesToastr.push(this.toastrService.warning(value.messageText, value.authorName, {disableTimeOut: true}).toastId)
+        break;
+    }
+  
+    if (this.showMessagesToastr.length > 3) {
+      this.toastrService.clear(this.showMessagesToastr[0])
+      this.showMessagesToastr.shift()
     }
   }
 
   @HostListener('window:scroll', ['$event'])
   onScroll(event: Event) {
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+    if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight) {
       this.wasAtBottomOfPage = true
       // Clear every toastr
       for (let x = 0; x < this.showMessagesToastr.length; x++){
@@ -98,6 +116,7 @@ export class DirectMessagesComponent {
   ngOnInit(){
     this.messageRSignal.connect()
     this.getMessages()
+    this.userId = this.authService.getJwtData()!.id
   }
 
   getMessages(){
@@ -113,16 +132,29 @@ export class DirectMessagesComponent {
   }
 
   sendMessage(message: string){
-    let data: PostMessageDto = {channelId: this.channelId, messageText: message}
+    let data: PostMessageDto = {channelId: this.channelId, messageText: message, messageTypeEnum: messageTypeEnum.Text}
     this.messageService.postMessage(data).pipe().subscribe()
   }
-  
-  // @HostListener('document:keyup', ['$event'])
-  // onKeyUp (event: KeyboardEvent) {
-  //   if (event.key == "PrintScreen") {
-      
-  //   }
-  // }
 
-  
+  @HostListener('document:keyup', ['$event'])
+  onKeyUp (event: KeyboardEvent) {
+    if (event.key == "PrintScreen") {
+      // let data: PostMessageDto = {channelId: this.channelId, messageText: "screenshot", messageTypeEnum: messageTypeEnum.Screenshot}
+      // this.messageService.postMessage(data).pipe().subscribe()
+    }
+  }
+
+  deleteMessage(message: MessageDto){
+    this.messageService.deleteMessage(message.id).pipe().subscribe()
+  }
+
+  editMessage(messageDto: MessageDto, editText: string){
+    let message: PutMessageDto = {id: messageDto.id, UpdatedMessage: editText}
+    this.messageService.putMessage(message).pipe().subscribe()
+  }
+
+  shareMessage(message: MessageDto){
+    let data: PostMessageDto = {channelId: this.channelId, messageText: "share", messageTypeEnum: messageTypeEnum.Share}
+    this.messageService.postMessage(data).pipe().subscribe()
+  }
 }

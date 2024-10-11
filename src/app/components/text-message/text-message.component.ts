@@ -1,36 +1,65 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentRef, EventEmitter, inject, Input, Output, ViewChild, ViewContainerRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, inject, Input, Output, ViewChild } from '@angular/core';
 import { MessageDto } from '../../shared/dtos/MessageDto';
 import { IconButtonComponent } from "../icon-button/icon-button.component";
 import { CommonModule, formatDate } from '@angular/common';
 import { TextInputComponent } from "../text-input/text-input.component";
-import { PutMessageDto } from '../../shared/dtos/PutMessageDto';
 import { MessagesService } from '../../services/messages/messages.service';
-import { tap } from 'rxjs';
 import { AuthService } from '../../services/account/auth.service';
 import { messageTypeEnum } from '../../shared/enums/MessageTypeEnum';
+import { Clipboard } from '@angular/cdk/clipboard';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ShareComponent } from '../share/share.component';
+import { shareTypeEnum } from '../../shared/enums/ShareTypeEnum';
+import { environment } from '../../../environments/environments';
 
 @Component({
   selector: 'app-text-message',
   standalone: true,
   templateUrl: './text-message.component.html',
   styleUrl: './text-message.component.scss',
-  imports: [IconButtonComponent, IconButtonComponent, CommonModule, TextInputComponent],
+  imports: [IconButtonComponent, IconButtonComponent, CommonModule, TextInputComponent, MatDialogModule],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TextMessageComponent {
   @Input({ required: true }) messageDto!: MessageDto
   @Output() deleteMe = new EventEmitter<boolean>();
+  @Output() sharedMessage = new EventEmitter<boolean>();
+  @Output() deletedMessage = new EventEmitter<boolean>();
+  @Output() editedMessage = new EventEmitter<string>();
   buttonsVisible: boolean = false
   isEditting: boolean = false
   isUserMessageAuthor: boolean = false
+  boundingRect: number = 0
 
   messageDeletedType = messageTypeEnum.Deleted
   messageTextType = messageTypeEnum.Text
   
-  private messageService = inject(MessagesService)
   private authService = inject(AuthService)
-  private changeDetector = inject(ChangeDetectorRef)
-  
+  private clipboard = inject(Clipboard)
+  dialog = inject(MatDialog);
+
+  openShareDialog() {
+    let dialogRef = this.dialog.open(ShareComponent);
+
+    dialogRef.componentInstance.Share.subscribe(result => {
+      this.sharedMessage.emit()
+      switch (result) {
+        case shareTypeEnum.Twitter:
+          window.open(`https://twitter.com/share?text=${this.messageDto.authorName}%20created%20this%20message:%20${this.messageDto.messageText}%20&url=${environment.appWebUrl}`, "_blank")
+          break;
+        case shareTypeEnum.Telegram:
+          window.open(`https://t.me/share/url?url=${environment.appWebUrl}&text=__${this.messageDto.authorName}__ created this message: __${this.messageDto.messageText}__`);
+          break;
+        case shareTypeEnum.Email:
+          window.open(`mailto:?subject=Amazing message system at ${environment.appWebUrl}&body=${this.messageDto.authorName} created this message: ${this.messageDto.messageText}`);
+          break;
+      
+        default:
+          break;
+      }
+    })
+  }
+
   ngOnInit(){
     this.isUserMessageAuthor = this.messageDto.authorId == this.authService.getJwtData()?.id
 
@@ -63,31 +92,15 @@ export class TextMessageComponent {
 
   editMessage(){
     this.isEditting = !this.isEditting
+    
   }
 
   MessageEditted(text: string){
     this.isEditting = false 
-    let message: PutMessageDto = {id: this.messageDto.id, UpdatedMessage: text}
-    this.messageService.putMessage(message).pipe(
-      tap(x=> {
-        if(x.status == 200){
-          this.messageDto.messageText = text;
-          this.messageDto.wasEdited = true;
-          this.changeDetector.detectChanges();
-        }
-      })
-    ).subscribe()
+    this.editedMessage.emit(text)
   }
 
-  deleteMessage(){
-    this.messageService.deleteMessage(this.messageDto.id).pipe(
-      tap(x=> {
-        if(x.status == 200){
-          this.messageDto.messageText = "Has deleted message";
-          this.messageDto.messageTypeEnum = messageTypeEnum.Deleted
-          this.changeDetector.detectChanges();
-        }
-      })
-    ).subscribe()
+  copyMessage(){
+    this.clipboard.copy(this.messageDto.messageText)
   }
 }

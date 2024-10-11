@@ -32,7 +32,9 @@ export class AuthService {
   }
   
   saveJwtData(jwtData: AuthData) {
-    localStorage.setItem("jwtUserData", JSON.stringify(jwtData));
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem("jwtUserData", JSON.stringify(jwtData));
+    }
   }
 
   getJwtData(): AuthData | null {

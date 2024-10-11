@@ -1,5 +1,6 @@
 export enum messageTypeEnum {
   Text,
   Deleted,
-  Screenshot
+  Screenshot,
+  Share
 }
