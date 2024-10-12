@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, EventEmitter, HostListener, Input, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MessageDto } from '../../shared/dtos/MessageDto';
 
 @Component({
   selector: 'app-text-input',
@@ -12,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 export class TextInputComponent {
   @ViewChild('inputDiv') inputDiv!: ElementRef;
   @Input() showMediaBtns: boolean = true;
+  @Input() replyMode: MessageDto | undefined;
   @Input() startText: string = "";
   @Output() sendMessage = new EventEmitter<string>();
   @Output() inputHeight = new EventEmitter<number>();

@@ -12,6 +12,7 @@ import { ToastrService } from 'ngx-toastr';
 import { messageTypeEnum } from '../../shared/enums/MessageTypeEnum';
 import { PutMessageDto } from '../../shared/dtos/PutMessageDto';
 import { AuthService } from '../../services/account/auth.service';
+import { BinaryMessageSearchById, BinaryMessageSearchOnScreen } from '../../shared/utility/BinaryMessageSearch';
 
 @Component({
   selector: 'app-direct-messages',
@@ -27,7 +28,8 @@ export class DirectMessagesComponent {
   messages: MessageDto[] = []
   channelId: string = ""
   userId: number = 0
-  @ViewChildren('message') messageElements!: QueryList<ElementRef<TextMessageComponent>>;
+  inputReplyMessage: MessageDto | undefined;
+  @ViewChildren('message') messageElements!: QueryList<TextMessageComponent>;
 
   private messageService = inject(MessagesService)
   private activatedRoute = inject(ActivatedRoute)
@@ -132,15 +134,22 @@ export class DirectMessagesComponent {
   }
 
   sendMessage(message: string){
-    let data: PostMessageDto = {channelId: this.channelId, messageText: message, messageTypeEnum: messageTypeEnum.Text}
+    let data: PostMessageDto = {channelId: this.channelId, messageText: message, messageTypeEnum: messageTypeEnum.Text, replyToId: this.inputReplyMessage?.id}
     this.messageService.postMessage(data).pipe().subscribe()
+    this.inputReplyMessage = undefined
   }
 
   @HostListener('document:keyup', ['$event'])
   onKeyUp (event: KeyboardEvent) {
     if (event.key == "PrintScreen") {
-      // let data: PostMessageDto = {channelId: this.channelId, messageText: "screenshot", messageTypeEnum: messageTypeEnum.Screenshot}
-      // this.messageService.postMessage(data).pipe().subscribe()
+
+      let messages = this.messageElements.toArray()
+      let curViewportOffset = window.scrollY + (window.innerHeight/2)
+
+      let messageIndex = BinaryMessageSearchOnScreen(messages, curViewportOffset)
+
+      let data: PostMessageDto = {channelId: this.channelId, messageText: "screenshot", messageTypeEnum: messageTypeEnum.Screenshot, replyToId: messages[messageIndex].messageDto.id}
+      this.messageService.postMessage(data).pipe().subscribe()
     }
   }
 
@@ -153,8 +162,19 @@ export class DirectMessagesComponent {
     this.messageService.putMessage(message).pipe().subscribe()
   }
 
-  shareMessage(message: MessageDto){
-    let data: PostMessageDto = {channelId: this.channelId, messageText: "share", messageTypeEnum: messageTypeEnum.Share}
+  shareMessage(sharedMessageId: number){
+    let data: PostMessageDto = {channelId: this.channelId, messageText: "share", messageTypeEnum: messageTypeEnum.Share, replyToId: sharedMessageId}
     this.messageService.postMessage(data).pipe().subscribe()
+  }
+
+  replyMessage(message: MessageDto){
+    this.inputReplyMessage = message
+  }
+
+  takeToMessage(messageId: number){
+    let messages = this.messageElements.toArray()
+    let messageIndex = BinaryMessageSearchById(messages, messageId)
+    window.scrollTo(0, messages[messageIndex].getOffsetHeight() - (window.innerHeight/2));
+    messages[messageIndex].showAnimation()
   }
 }

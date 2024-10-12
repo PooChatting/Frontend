@@ -10,4 +10,5 @@ export interface MessageDto {
   publication : string,
   wasEdited : boolean,
   messageTypeEnum: messageTypeEnum
+  replyToId?: number
 }

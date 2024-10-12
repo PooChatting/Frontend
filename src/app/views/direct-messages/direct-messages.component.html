@@ -1,11 +1,20 @@
 
 <div class="flex flex-col relative pb-3" [style]="{'padding-top': (inputBarHeight+24)+'px', 'top': '-'+(inputBarHeight+24)+'px'}">
-    <app-text-message #message *ngFor="let message of messages" [messageDto]="message" (deletedMessage)="deleteMessage(message)" (editedMessage)="editMessage(message, $event)" (sharedMessage)="shareMessage(message)"></app-text-message>
+    <app-text-message #message 
+            *ngFor="let message of messages" 
+            [messageDto]="message" 
+            (clickOnRepliedMessage)="takeToMessage($event)" 
+            (deletedMessage)="deleteMessage(message)" 
+            (editedMessage)="editMessage(message, $event)" 
+            (sharedMessage)="shareMessage($event)"
+            (replyMessage)="replyMessage(message)">
+        </app-text-message>
 </div>
 
 <app-text-input 
         (inputHeight)="inputBarHeight = $event"
         (sendMessage)="sendMessage($event)"
+        [replyMode]="inputReplyMessage"
         class="fixed bottom-6 left-[2.5rem] w-[calc(100%-5rem)]"
         >
 </app-text-input>

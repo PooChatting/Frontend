@@ -7,12 +7,14 @@ theme = {
     'lighter': "#eeeffb",
     'light': "#e4e5f1",
     'base': "#dadbe7",
+    'darkBase': "#d2d3dd",
     'dark': "#9394a5",
   },
   'success': '#31a354',
   'warning': '#f8ed62',
   'alert': '#ee0000',
   'grey': '#6a6a6a',
+  'blue': '#1111ee',
   'textColor': {
     DEFAULT: '#111111',
     'unimportant': '#333333'

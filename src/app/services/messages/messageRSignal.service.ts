@@ -36,7 +36,8 @@ export class messageRSignalService {
           messageText: msg.MessageText,
           publication: msg.Publication,
           wasEdited: msg.WasEdited,
-          messageTypeEnum: messageTypeEnum[msg.MessageTypeEnum as keyof typeof messageTypeEnum]
+          messageTypeEnum: messageTypeEnum[msg.MessageTypeEnum as keyof typeof messageTypeEnum],
+          replyToId: msg.ReplyToId
         }
         this.recivedEditedMessage.emit(msgModel)
       });
@@ -53,9 +54,9 @@ export class messageRSignalService {
           messageText: msg.MessageText,
           publication: msg.Publication,
           wasEdited: msg.WasEdited,
-          messageTypeEnum: messageTypeEnum[msg.MessageTypeEnum as keyof typeof messageTypeEnum]
+          messageTypeEnum: messageTypeEnum[msg.MessageTypeEnum as keyof typeof messageTypeEnum],
+          replyToId: msg.ReplyToId
         }
-        console.log(msgModel.messageTypeEnum);
         this.recivedMessage.emit(msgModel)
       });
 
@@ -70,7 +71,8 @@ export class messageRSignalService {
           messageText: msg.MessageText,
           publication: msg.Publication,
           wasEdited: msg.WasEdited,
-          messageTypeEnum: messageTypeEnum[msg.MessageTypeEnum as keyof typeof messageTypeEnum]
+          messageTypeEnum: messageTypeEnum[msg.MessageTypeEnum as keyof typeof messageTypeEnum],
+          replyToId: msg.ReplyToId
         }
         this.deletedMessage.emit(msgModel)
       });
