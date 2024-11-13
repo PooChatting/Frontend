@@ -16,7 +16,7 @@ export class messageRSignalService {
     @Output() recivedEditedMessage = new EventEmitter<MessageDto>();
     @Output() deletedMessage = new EventEmitter<MessageDto>();
 
-    connect(): void {
+    async connect(): Promise<boolean> {
       this.hubConnection = new signalR.HubConnectionBuilder()
         .withUrl('https://localhost:44355/chatHub', {
           skipNegotiation: true,
@@ -37,7 +37,8 @@ export class messageRSignalService {
           publication: msg.Publication,
           wasEdited: msg.WasEdited,
           messageTypeEnum: messageTypeEnum[msg.MessageTypeEnum as keyof typeof messageTypeEnum],
-          replyToId: msg.ReplyToId
+          replyToId: msg.ReplyToId,
+          hadBeenRead: msg.HadBeenRead
         }
         this.recivedEditedMessage.emit(msgModel)
       });
@@ -55,7 +56,8 @@ export class messageRSignalService {
           publication: msg.Publication,
           wasEdited: msg.WasEdited,
           messageTypeEnum: messageTypeEnum[msg.MessageTypeEnum as keyof typeof messageTypeEnum],
-          replyToId: msg.ReplyToId
+          replyToId: msg.ReplyToId,
+          hadBeenRead: msg.HadBeenRead
         }
         this.recivedMessage.emit(msgModel)
       });
@@ -72,13 +74,14 @@ export class messageRSignalService {
           publication: msg.Publication,
           wasEdited: msg.WasEdited,
           messageTypeEnum: messageTypeEnum[msg.MessageTypeEnum as keyof typeof messageTypeEnum],
-          replyToId: msg.ReplyToId
+          replyToId: msg.ReplyToId,
+          hadBeenRead: msg.HadBeenRead
         }
         this.deletedMessage.emit(msgModel)
       });
       
-      this.hubConnection.start()
-        .then(() => {console.log('connection started')})
-        .catch((err) => console.log('error while establishing signalr connection: ' + err));
+      return this.hubConnection.start()
+        .then(() => { return true })
+        .catch(() => { return false });
     }
 }

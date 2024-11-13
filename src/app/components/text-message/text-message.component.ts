@@ -102,6 +102,7 @@ export class TextMessageComponent {
     this.CDF.detectChanges()
     setTimeout(() => {
       this.playShowAnimation = false
+      this.CDF.detectChanges()
     }, 1000);
   }
 

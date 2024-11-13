@@ -19,7 +19,8 @@
                 <div>
                     <span class="font-bold">{{messageDto.authorName}}</span>
                     <span class="text-textColor-unimportant font-light mx-3">{{messageDto.publication}}</span>
-                    <span class="text-textColor-unimportant font-light" [ngClass]="{'hidden': !messageDto.wasEdited}">Edited</span>
+                    <span class="text-textColor-unimportant font-light mr-3" [ngClass]="{'hidden': !messageDto.wasEdited}">Edited</span>
+                    <span class="text-textColor-unimportant font-light">{{messageDto.hadBeenRead ? "Odczytana" : "Nie odczytana"}}</span>
                 </div>
                 <span [ngClass]="{'hidden': isEditting}" class="break-all text-left">{{messageDto.messageText}}</span>
                 <app-text-input 

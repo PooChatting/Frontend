@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
+import { Component, HostListener, inject, QueryList, ViewChildren } from '@angular/core';
 import { TextInputComponent } from '../../components/text-input/text-input.component';
 import { CommonModule } from '@angular/common';
 import { TextMessageComponent } from '../../components/text-message/text-message.component';
@@ -28,6 +28,10 @@ export class DirectMessagesComponent {
   messages: MessageDto[] = []
   channelId: string = ""
   userId: number = 0
+  messagesPage: number = 1
+  messagesMaxPage: number = 2
+  wasLastAddedPageUp: boolean = true
+  awaitForMessagesCallback: boolean = false
   inputReplyMessage: MessageDto | undefined;
   @ViewChildren('message') messageElements!: QueryList<TextMessageComponent>;
 
@@ -47,6 +51,7 @@ export class DirectMessagesComponent {
     });
     messageRSignal.recivedMessage.asObservable().subscribe((value) => {
         this.messages.push(value)
+        this.messageService.saveMessage(this.channelId, value)
         if (value.authorId != this.userId && !this.wasAtBottomOfPage) {
           if (value.messageTypeEnum != messageTypeEnum.Text) {
             this.addToastr(value, "warning")
@@ -58,6 +63,9 @@ export class DirectMessagesComponent {
             }
             this.addToastr(value, "info")
           }
+        }
+        if (this.messages.length > 100) {
+          this.messages.shift()
         }
     });
     messageRSignal.deletedMessage.asObservable().subscribe((value) => {
@@ -73,8 +81,55 @@ export class DirectMessagesComponent {
     });
   }
 
+  getMessages(page: number, isDirectionUp: boolean){
+    this.activatedRoute.paramMap.subscribe(params => {
+    this.channelId = params.get('id')!
+    this.messageService.getMessagesFromChannel(this.channelId, 50, page)
+      .pipe(
+        tap(x => {
+          if (isDirectionUp) {
+            this.messages.unshift(...x.items)
+            if (this.messages.length > 100) {
+              this.messages.splice(101, this.messages.length-100)
+            }
+          }
+          else{
+            this.messages = this.messages.concat(x.items)
+            if (this.messages.length > 100) {
+              this.messages.splice(0, this.messages.length-100)
+              console.log(this.messages);
+            }
+          }
+          this.messagesMaxPage = x.totalPages
+          this.awaitForMessagesCallback = false
+        })
+      ).subscribe()
+    });
+  }
+
   ngAfterViewInit() {
     this.messageElements.changes.subscribe(_ => this.onItemElementsChanged());
+    if (this.messages.length != 0) {
+      this.onItemElementsChanged()
+    }
+  }
+  
+  ngOnInit(){
+    this.messageRSignal.connect()
+      .then((x) => 
+        {
+          this.toastrService.clear(this.showMessagesToastr[0])
+          this.showMessagesToastr = []
+          if (x) {
+            this.toastrService.success("Connected to the server")
+          }
+          else{
+            this.toastrService.error("Failed to connect to the server")
+          }
+        })
+    this.userId = this.authService.getJwtData()!.id
+    this.getMessages(this.messagesPage, true)
+    this.showMessagesToastr.push(this.toastrService.info("Connecting to the server..", "Info", {disableTimeOut: true}).toastId)
   }
 
   onItemElementsChanged(){
@@ -102,41 +157,35 @@ export class DirectMessagesComponent {
 
   @HostListener('window:scroll', ['$event'])
   onScroll(event: Event) {
-    if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight) {
+    if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight) { // If at the bottom of page
       this.wasAtBottomOfPage = true
       // Clear every toastr
-      for (let x = 0; x < this.showMessagesToastr.length; x++){
-        this.toastrService.clear(this.showMessagesToastr[x])
-      }
-      this.showMessagesToastr = []
+      // for (let x = 0; x < this.showMessagesToastr.length; x++){
+      //   this.toastrService.clear(this.showMessagesToastr[x])
+      // }
+      // this.showMessagesToastr = []
     }
     else{
       this.wasAtBottomOfPage = false
+      if (window.scrollY < document.body.scrollHeight * 0.15 && !this.awaitForMessagesCallback && this.messagesPage-1 != this.messagesMaxPage) {
+        this.awaitForMessagesCallback = true
+        if (!this.wasLastAddedPageUp) {
+          this.messagesPage += 1
+        }
+        this.messagesPage += 1
+        this.wasLastAddedPageUp = true
+        this.getMessages(this.messagesPage, true)
+      }
+      if (window.innerHeight + window.scrollY > document.body.scrollHeight * 0.85 && !this.awaitForMessagesCallback && this.messagesPage >= 2) {
+        this.awaitForMessagesCallback = true
+        this.messagesPage -= 1
+        if (this.wasLastAddedPageUp) {
+          this.messagesPage -= 1
+        }
+        this.wasLastAddedPageUp = false
+        this.getMessages(this.messagesPage, false)
+      }
     }
-  }
-
-  ngOnInit(){
-    this.messageRSignal.connect()
-    this.getMessages()
-    this.userId = this.authService.getJwtData()!.id
-  }
-
-  getMessages(){
-    this.activatedRoute.paramMap.subscribe(params => {
-    this.channelId = params.get('id')!
-    this.messageService.getMessagesFromChannel(this.channelId)
-      .pipe(
-        tap(x => {
-          this.messages = x
-        })
-      ).subscribe()
-    });
-  }
-
-  sendMessage(message: string){
-    let data: PostMessageDto = {channelId: this.channelId, messageText: message, messageTypeEnum: messageTypeEnum.Text, replyToId: this.inputReplyMessage?.id}
-    this.messageService.postMessage(data).pipe().subscribe()
-    this.inputReplyMessage = undefined
   }
 
   @HostListener('document:keyup', ['$event'])
@@ -151,6 +200,12 @@ export class DirectMessagesComponent {
       let data: PostMessageDto = {channelId: this.channelId, messageText: "screenshot", messageTypeEnum: messageTypeEnum.Screenshot, replyToId: messages[messageIndex].messageDto.id}
       this.messageService.postMessage(data).pipe().subscribe()
     }
+  }
+
+  sendMessage(message: string){
+    let data: PostMessageDto = {channelId: this.channelId, messageText: message, messageTypeEnum: messageTypeEnum.Text, replyToId: this.inputReplyMessage?.id}
+    this.messageService.postMessage(data).pipe().subscribe()
+    this.inputReplyMessage = undefined
   }
 
   deleteMessage(message: MessageDto){

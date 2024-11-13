@@ -25,7 +25,6 @@ export function BinaryMessageSearchOnScreen(messages: TextMessageComponent[], cu
 }
 
 export function BinaryMessageSearchById(messages: TextMessageComponent[], messageId: number) {
-  console.log(messageId);
   let lastIndex = -1
   let curIndex = messages.length-1
   for (let times = 2; times >= 0; times*=2) {
