@@ -79,6 +79,11 @@ export class messageRSignalService {
         }
         this.deletedMessage.emit(msgModel)
       });
+
+      this.hubConnection.on('userConnected', (message) => {
+        console.log(message);
+        
+      });
       
       return this.hubConnection.start()
         .then(() => { return true })

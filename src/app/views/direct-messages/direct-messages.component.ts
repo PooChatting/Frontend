@@ -13,6 +13,7 @@ import { messageTypeEnum } from '../../shared/enums/MessageTypeEnum';
 import { PutMessageDto } from '../../shared/dtos/PutMessageDto';
 import { AuthService } from '../../services/account/auth.service';
 import { BinaryMessageSearchById, BinaryMessageSearchOnScreen } from '../../shared/utility/BinaryMessageSearch';
+import { ChannelService } from '../../services/channel/channel.service';
 
 @Component({
   selector: 'app-direct-messages',
@@ -112,6 +113,15 @@ export class DirectMessagesComponent {
     if (this.messages.length != 0) {
       this.onItemElementsChanged()
     }
+    // TEMPORARY FIX !!!
+    setTimeout(() => {
+      let savedMessages = this.messageService.getSavedMessages(this.channelId)
+      if (savedMessages != null && savedMessages.length != 0) {
+        this.messages = savedMessages
+      }
+    }, 1);
+    
+    this.getMessages(this.messagesPage, true)
   }
   
   ngOnInit(){
@@ -122,13 +132,13 @@ export class DirectMessagesComponent {
           this.showMessagesToastr = []
           if (x) {
             this.toastrService.success("Connected to the server")
+            
           }
           else{
             this.toastrService.error("Failed to connect to the server")
           }
         })
     this.userId = this.authService.getJwtData()!.id
-    this.getMessages(this.messagesPage, true)
     this.showMessagesToastr.push(this.toastrService.info("Connecting to the server..", "Info", {disableTimeOut: true}).toastId)
   }
 

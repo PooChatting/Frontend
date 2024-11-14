@@ -20,4 +20,11 @@ export class ChannelService {
         {headers: this.authHeader.getAuthenticationHeader()})
   }
 
+  checkIfUpToDate(channelId: string) {
+    return this.httpClient
+      .get(
+        `${environment.apiUrl}/channel/${channelId}/isUpToDate`,
+        {headers: this.authHeader.getAuthenticationHeader()})
+  }
+
 }
