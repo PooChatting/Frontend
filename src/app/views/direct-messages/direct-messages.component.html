@@ -7,7 +7,7 @@
             (deletedMessage)="deleteMessage(message)" 
             (editedMessage)="editMessage(message, $event)" 
             (sharedMessage)="shareMessage($event)"
-            (replyMessage)="replyMessage(message)">
+            (replyMessage)="inputReplyMessage = message">
         </app-text-message>
 </div>
 
@@ -15,6 +15,7 @@
         (inputHeight)="inputBarHeight = $event"
         (sendMessage)="sendMessage($event)"
         [replyMode]="inputReplyMessage"
+        (removeReplyMode)="inputReplyMessage = undefined"
         class="fixed bottom-6 left-[2.5rem] w-[calc(100%-5rem)]"
         >
 </app-text-input>

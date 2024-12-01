@@ -33,6 +33,7 @@ export class TextMessageComponent {
   isEditting: boolean = false
   isUserMessageAuthor: boolean = false
   playShowAnimation: boolean = false
+  publication: string = ""
 
   messageDeletedType = messageTypeEnum.Deleted
   messageTextType = messageTypeEnum.Text
@@ -76,22 +77,21 @@ export class TextMessageComponent {
     let dateFromMessage = new Date(messageDate);
     
     if(dateCheck.toDateString() === dateFromMessage.toDateString()){
-      this.messageDto.publication = `Today ${messageTime}`
+      this.publication = `Today ${messageTime}`
       return
     }
     dateCheck.setDate(dateCheck.getDate() - 1)
     if(dateCheck.toDateString() === dateFromMessage.toDateString()){
-      this.messageDto.publication = `Yesterday ${messageTime}`
+      this.publication = `Yesterday ${messageTime}`
       return
     }
     for (let x = 0; x < 5; x++) {
       dateCheck.setDate(dateCheck.getDate() - 1)
       if(dateCheck.toDateString() === dateFromMessage.toDateString()){
-        this.messageDto.publication = `${dateCheck.toLocaleDateString("en-US", { weekday: 'long' })} ${messageTime}`
+        this.publication = `${dateCheck.toLocaleDateString("en-US", { weekday: 'long' })} ${messageTime}`
         return
       }
     }
-    this.messageDto.publication = `${messageDate} ${messageTime}`
   }
 
   public getOffsetHeight(){

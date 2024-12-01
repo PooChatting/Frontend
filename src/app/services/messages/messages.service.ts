@@ -8,6 +8,7 @@ import { PostMessageDto } from "../../shared/dtos/PostMessageDto";
 import { PutMessageDto } from "../../shared/dtos/PutMessageDto";
 import { PagedResult } from "../../shared/dtos/PagedResult";
 import { ChannelService } from "../channel/channel.service";
+import { AuthService } from "../account/auth.service";
 
 @Injectable({
   providedIn: 'root'
@@ -18,20 +19,17 @@ export class MessagesService {
   private httpClient = inject(HttpClient)
   private authHeader = inject(AuthHeader)
   private channelService = inject(ChannelService)
+  private authService = inject(AuthService)
   
   saveMessages(channel: string, messages: MessageDto[]) {
-    console.log(messages);
     localStorage.setItem(`${channel}savedMessages`, JSON.stringify(messages));
-    
-    let saved = localStorage.getItem(`${channel}savedMessages`)!
-    console.log(JSON.parse(saved));
   }
 
   saveMessage(channel: string, message: MessageDto) {
     let saved = localStorage.getItem(`${channel}savedMessages`)!
     let messages = JSON.parse(saved) as MessageDto[]
     messages = messages.concat(message)
-    messages.splice(0, messages.length-100)
+    messages.shift()
     localStorage.setItem(`${channel}savedMessages`, JSON.stringify(messages));
   }
 
@@ -40,17 +38,36 @@ export class MessagesService {
     return JSON.parse(saved)
   }
 
+  getNewestSavedMessage(channel: string): MessageDto | null {
+    let saved = localStorage.getItem(`${channel}savedMessages`)!
+    let messages = JSON.parse(saved) as MessageDto[]
+    return messages[messages.length-1]
+  }
+
   getMessagesFromChannel(channelId: string, pageSize: number, pageNumber: number): Observable<PagedResult<MessageDto>> {
     
     if (pageNumber == 1) {
+      let newest = this.getNewestSavedMessage(channelId)
+      if (newest?.authorId == this.authService.getJwtData()?.id && newest?.hadBeenRead == true) {
+        let savedMessages = this.getSavedMessages(channelId);
+
+        let pagedResults: PagedResult<MessageDto> = {
+          items: savedMessages!,
+          page: 1,
+          totalItems: 300,
+          totalPages: 100
+        };
+        return of(pagedResults);
+      }
       return this.channelService.checkIfUpToDate(channelId).pipe(
         switchMap((isUpToDate) => {
           if (isUpToDate) {
             let savedMessages = this.getSavedMessages(channelId);
+            
             if (savedMessages != null && savedMessages.length != 0) {
               let pagedResults: PagedResult<MessageDto> = {
                 items: savedMessages,
-                page: pageNumber,
+                page: 1,
                 totalItems: 300,
                 totalPages: 100
               };
@@ -75,13 +92,6 @@ export class MessagesService {
     .get<PagedResult<MessageDto>>(
       `${environment.apiUrl}/message/channel/${channelId}?pageSize=${pageSize}&pageNumber=${pageNumber}`,
       {responseType: "json", headers: this.authHeader.getAuthenticationHeader()})
-
-    if (pageNumber == 0) {
-      messages.pipe(
-        tap(x => {
-        }
-      )).subscribe()
-    }
 
     return messages
   }

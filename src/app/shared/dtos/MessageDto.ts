@@ -12,4 +12,5 @@ export interface MessageDto {
   messageTypeEnum: messageTypeEnum,
   replyToId?: number,
   hadBeenRead: boolean
+  waitingToPost?: boolean
 }

@@ -51,6 +51,9 @@ export class DirectMessagesComponent {
       }
     });
     messageRSignal.recivedMessage.asObservable().subscribe((value) => {
+        if (value.authorId != this.authService.getJwtData()?.id) {
+          value.hadBeenRead = true
+        }
         this.messages.push(value)
         this.messageService.saveMessage(this.channelId, value)
         if (value.authorId != this.userId && !this.wasAtBottomOfPage) {
@@ -80,14 +83,22 @@ export class DirectMessagesComponent {
         }
       }
     });
+    messageRSignal.readMessage.asObservable().subscribe((value) => {
+      this.messages = this.messages.map((message) => 
+        message.hadBeenRead === false && message.authorId == this.userId ? { ...message, hadBeenRead: true} : message
+      );
+    });
   }
 
   getMessages(page: number, isDirectionUp: boolean){
     this.activatedRoute.paramMap.subscribe(params => {
     this.channelId = params.get('id')!
-    this.messageService.getMessagesFromChannel(this.channelId, 50, page)
+    this.messageService.getMessagesFromChannel(this.channelId, 50, page == -1 ? 1 : page)
       .pipe(
         tap(x => {
+          if (page == -1) { // This checks if it was called first time
+            this.messages = []
+          }
           if (isDirectionUp) {
             this.messages.unshift(...x.items)
             if (this.messages.length > 100) {
@@ -121,7 +132,9 @@ export class DirectMessagesComponent {
       }
     }, 1);
     
-    this.getMessages(this.messagesPage, true)
+    setTimeout(() => {
+      this.getMessages(-1, true)
+    }, 500);
   }
   
   ngOnInit(){
@@ -132,7 +145,6 @@ export class DirectMessagesComponent {
           this.showMessagesToastr = []
           if (x) {
             this.toastrService.success("Connected to the server")
-            
           }
           else{
             this.toastrService.error("Failed to connect to the server")
@@ -230,10 +242,6 @@ export class DirectMessagesComponent {
   shareMessage(sharedMessageId: number){
     let data: PostMessageDto = {channelId: this.channelId, messageText: "share", messageTypeEnum: messageTypeEnum.Share, replyToId: sharedMessageId}
     this.messageService.postMessage(data).pipe().subscribe()
-  }
-
-  replyMessage(message: MessageDto){
-    this.inputReplyMessage = message
   }
 
   takeToMessage(messageId: number){

@@ -15,6 +15,7 @@ export class messageRSignalService {
     @Output() recivedMessage = new EventEmitter<MessageDto>();
     @Output() recivedEditedMessage = new EventEmitter<MessageDto>();
     @Output() deletedMessage = new EventEmitter<MessageDto>();
+    @Output() readMessage = new EventEmitter<number>();
 
     async connect(): Promise<boolean> {
       this.hubConnection = new signalR.HubConnectionBuilder()
@@ -60,6 +61,9 @@ export class messageRSignalService {
           hadBeenRead: msg.HadBeenRead
         }
         this.recivedMessage.emit(msgModel)
+        if (msg.AuthorId != this.authService.getJwtData()?.id) {
+          this.hubConnection?.invoke("HasRecivedMessage", msgModel)
+        }
       });
 
       this.hubConnection.on('deleteMessage', (message) => {
@@ -80,9 +84,8 @@ export class messageRSignalService {
         this.deletedMessage.emit(msgModel)
       });
 
-      this.hubConnection.on('userConnected', (message) => {
-        console.log(message);
-        
+      this.hubConnection.on('MessageRead', (messageId) => {
+        this.readMessage.emit(messageId)
       });
       
       return this.hubConnection.start()
