@@ -92,6 +92,7 @@ export class TextMessageComponent {
         return
       }
     }
+    this.publication = `${messageDate} ${messageTime}`
   }
 
   public getOffsetHeight(){

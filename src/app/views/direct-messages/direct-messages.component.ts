@@ -126,10 +126,14 @@ export class DirectMessagesComponent {
     }
     // TEMPORARY FIX !!!
     setTimeout(() => {
-      let savedMessages = this.messageService.getSavedMessages(this.channelId)
-      if (savedMessages != null && savedMessages.length != 0) {
-        this.messages = savedMessages
-      }
+      this.activatedRoute.paramMap.subscribe(params => {
+        this.channelId = params.get('id')!
+        let savedMessages = this.messageService.getSavedMessages(this.channelId)
+        
+        if (savedMessages != null && savedMessages.length != 0) {
+          this.messages = savedMessages
+        }
+      })
     }, 1);
     
     setTimeout(() => {

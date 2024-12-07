@@ -12,7 +12,7 @@ export class ChannelService {
 
   private httpClient = inject(HttpClient)
   private authHeader = inject(AuthHeader)
-
+  
   addToChannel(channelId: string) {
     return this.httpClient
       .put(
@@ -24,6 +24,13 @@ export class ChannelService {
     return this.httpClient
       .get(
         `${environment.apiUrl}/channel/${channelId}/isUpToDate`,
+        {headers: this.authHeader.getAuthenticationHeader()})
+  }
+
+  getUserChannels(){
+    return this.httpClient
+      .get(
+        `${environment.apiUrl}/channel/user`,
         {headers: this.authHeader.getAuthenticationHeader()})
   }
 

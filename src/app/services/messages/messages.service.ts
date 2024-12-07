@@ -45,7 +45,6 @@ export class MessagesService {
   }
 
   getMessagesFromChannel(channelId: string, pageSize: number, pageNumber: number): Observable<PagedResult<MessageDto>> {
-    
     if (pageNumber == 1) {
       let newest = this.getNewestSavedMessage(channelId)
       if (newest?.authorId == this.authService.getJwtData()?.id && newest?.hadBeenRead == true) {
