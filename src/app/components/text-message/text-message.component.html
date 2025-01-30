@@ -13,7 +13,7 @@
             <div class="icon-reply icon"></div>
             <span class="mx-1">Replying to</span><span class="text-blue font-semibold cursor-pointer" (click)="clickOnRepliedMessage.emit(messageDto.replyToId)">this message</span>
         </div>
-        <div class="w-[calc(100%)] h-fit px-1 my-2 flex rounded-md relative">
+        <div class="w-[calc(100%)] h-fit px-1 mb-4 flex rounded-md relative">
             <img src="https://preview.redd.it/cigar-cougar-nicotines-people-to-death-v0-67rlfmy803mc1.png?width=640&crop=smart&auto=webp&s=4c9c2f84735ad4f548b95d14eb4e627105f31ef4" class="w-10 h-10 mr-3 mt-[3px] rounded-full">
             <div class="flex flex-col items-start">
                 <div>
@@ -22,8 +22,8 @@
                     <span class="text-textColor-unimportant font-light mr-3" [ngClass]="{'hidden': !messageDto.wasEdited}">Edited</span>
                     <span class="text-textColor-unimportant font-light">{{messageDto.hadBeenRead ? "Odczytana" : "Nie odczytana"}}</span>
                 </div>
-                <span [ngClass]="{'hidden': isEditting}" class="break-all text-left">{{messageDto.messageText}}</span>
-                <app-text-input 
+                <span [ngClass]="{'hidden': isEditting}" style="word-break: break-word;" class="break-all text-left">{{messageDto.messageText}}</span>
+                <app-text-input
                         [startText]="messageDto.messageText" 
                         [showMediaBtns]="false" 
                         [ngClass]="{'hidden': !isEditting}" 

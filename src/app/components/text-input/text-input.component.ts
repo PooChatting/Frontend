@@ -26,7 +26,7 @@ export class TextInputComponent {
   }
 
   messageChange(element: HTMLDivElement){
-    this.inputHeight.emit(parseInt(element.style.height.split("px")[0]))
+    this.inputHeight.emit(element.offsetHeight)
     this.hasSentMessage = false
   }
 
@@ -44,7 +44,7 @@ export class TextInputComponent {
         this.hasSentMessage = true
         this.sendMessage.emit(this.inputDiv.nativeElement.innerText)
         this.inputDiv.nativeElement.innerHTML = ""
-        this.inputHeight.emit(56)
+        this.inputHeight.emit(32)
       }
     }
   }

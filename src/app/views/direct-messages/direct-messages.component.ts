@@ -7,28 +7,29 @@ import { ActivatedRoute } from '@angular/router';
 import { tap } from 'rxjs';
 import { MessageDto } from '../../shared/dtos/MessageDto';
 import { PostMessageDto } from "../../shared/dtos/PostMessageDto";
-import { messageRSignalService } from '../../services/messages/messageRSignal.service';
-import { ToastrService } from 'ngx-toastr';
 import { messageTypeEnum } from '../../shared/enums/MessageTypeEnum';
 import { PutMessageDto } from '../../shared/dtos/PutMessageDto';
-import { AuthService } from '../../services/account/auth.service';
 import { BinaryMessageSearchById, BinaryMessageSearchOnScreen } from '../../shared/utility/BinaryMessageSearch';
-import { ChannelService } from '../../services/channel/channel.service';
+import { IconButtonComponent } from "../../components/icon-button/icon-button.component";
+import { MessageHandlerService } from '../../shared/utility/MessageHandlerService';
+import { ChannelsPickComponent } from '../channels-pick/channels-pick.component';
 
 @Component({
   selector: 'app-direct-messages',
   standalone: true,
-  imports: [CommonModule, TextInputComponent, TextMessageComponent],
+  imports: [CommonModule, TextInputComponent, TextMessageComponent, IconButtonComponent, ChannelsPickComponent],
   templateUrl: './direct-messages.component.html',
 })
 
 export class DirectMessagesComponent {
-  inputBarHeight: number = 56
-  wasAtBottomOfPage: boolean = true
+  inputBarHeight: number = 32
+  isAtBottomOfPage: boolean = true
   showMessagesToastr: number[] = []
   messages: MessageDto[] = []
   channelId: string = ""
   userId: number = 0
+  circleBottomPositionAnim = "100px"
+  newestMessageId: number = 0
   messagesPage: number = 1
   messagesMaxPage: number = 2
   wasLastAddedPageUp: boolean = true
@@ -38,68 +39,19 @@ export class DirectMessagesComponent {
 
   private messageService = inject(MessagesService)
   private activatedRoute = inject(ActivatedRoute)
-  private toastrService = inject(ToastrService)
-  private authService = inject(AuthService)
+  private messageHandler = inject(MessageHandlerService)
 
-  constructor(private messageRSignal: messageRSignalService) {
-    messageRSignal.recivedEditedMessage.asObservable().subscribe((value) => {
-      let messageIndex = this.messages.findIndex(x => x.id === value.id);
-      if (messageIndex !== -1) {
-        this.messages = this.messages.map((message, i) => 
-          i === messageIndex ? { ...message = value} : message
-        );
-      }
-    });
-    messageRSignal.recivedMessage.asObservable().subscribe((value) => {
-        if (value.authorId != this.authService.getJwtData()?.id) {
-          value.hadBeenRead = true
-        }
-        this.messages.push(value)
-        this.messageService.saveMessage(this.channelId, value)
-        if (value.authorId != this.userId && !this.wasAtBottomOfPage) {
-          if (value.messageTypeEnum != messageTypeEnum.Text) {
-            this.addToastr(value, "warning")
-          }
-          else{
-            // Trim message to 40 characters
-            if (value.messageText.length > 40) {
-              value.messageText = value.messageText.substring(0, 40) + "..."
-            }
-            this.addToastr(value, "info")
-          }
-        }
-        if (this.messages.length > 100) {
-          this.messages.shift()
-        }
-    });
-    messageRSignal.deletedMessage.asObservable().subscribe((value) => {
-      let messageIndex = this.messages.findIndex(x => x.id === value.id);
-      if (messageIndex !== -1) {
-        this.messages = this.messages.map((message, i) => 
-          i === messageIndex ? { ...message = value} : message
-        );
-        if (value.messageTypeEnum != messageTypeEnum.Text && !this.wasAtBottomOfPage && value.authorId != this.userId) {
-          this.addToastr(value, "warning")
-        }
-      }
-    });
-    messageRSignal.readMessage.asObservable().subscribe((value) => {
-      this.messages = this.messages.map((message) => 
-        message.hadBeenRead === false && message.authorId == this.userId ? { ...message, hadBeenRead: true} : message
-      );
-    });
-  }
-
-  getMessages(page: number, isDirectionUp: boolean){
+  getMessages(){
     this.activatedRoute.paramMap.subscribe(params => {
     this.channelId = params.get('id')!
-    this.messageService.getMessagesFromChannel(this.channelId, 50, page == -1 ? 1 : page)
+    this.messageService.getMessagesFromChannel(this.channelId, 50, this.messagesPage == -1 ? 1 : this.messagesPage)
       .pipe(
         tap(x => {
-          if (page == -1) { // This checks if it was called first time
+          if (this.messagesPage == -1) { // This checks if it was called first time
             this.messages = []
+            this.messagesPage++
           }
-          if (isDirectionUp) {
+          if (this.wasLastAddedPageUp) {
             this.messages.unshift(...x.items)
             if (this.messages.length > 100) {
               this.messages.splice(101, this.messages.length-100)
@@ -109,11 +61,11 @@ export class DirectMessagesComponent {
             this.messages = this.messages.concat(x.items)
             if (this.messages.length > 100) {
               this.messages.splice(0, this.messages.length-100)
-              console.log(this.messages);
             }
           }
           this.messagesMaxPage = x.totalPages
           this.awaitForMessagesCallback = false
+          this.setNewestMessage()
         })
       ).subscribe()
     });
@@ -124,96 +76,70 @@ export class DirectMessagesComponent {
     if (this.messages.length != 0) {
       this.onItemElementsChanged()
     }
+
+    this.messageHandler.messageServiceInitializer()
+
     // TEMPORARY FIX !!!
     setTimeout(() => {
-      this.activatedRoute.paramMap.subscribe(params => {
-        this.channelId = params.get('id')!
         let savedMessages = this.messageService.getSavedMessages(this.channelId)
         
         if (savedMessages != null && savedMessages.length != 0) {
           this.messages = savedMessages
         }
-      })
     }, 1);
     
     setTimeout(() => {
-      this.getMessages(-1, true)
+      this.messagesPage = -1
+      this.wasLastAddedPageUp = true
+      this.getMessages()
     }, 500);
+    
+    this.messageHandler.messages$.subscribe((updatedMessages) => {
+      this.messages = updatedMessages;
+      this.setNewestMessage()
+    });
   }
-  
-  ngOnInit(){
-    this.messageRSignal.connect()
-      .then((x) => 
-        {
-          this.toastrService.clear(this.showMessagesToastr[0])
-          this.showMessagesToastr = []
-          if (x) {
-            this.toastrService.success("Connected to the server")
-          }
-          else{
-            this.toastrService.error("Failed to connect to the server")
-          }
-        })
-    this.userId = this.authService.getJwtData()!.id
-    this.showMessagesToastr.push(this.toastrService.info("Connecting to the server..", "Info", {disableTimeOut: true}).toastId)
-  }
+
 
   onItemElementsChanged(){
-    if (this.wasAtBottomOfPage) {
+    if (this.isAtBottomOfPage) {
       window.scrollTo(0,document.body.scrollHeight);
-      this.wasAtBottomOfPage = false
-    }
-  }
-
-  addToastr(value: MessageDto, type: string){
-    switch (type) {
-      case "info":
-          this.showMessagesToastr.push(this.toastrService.info(value.messageText, value.authorName, {disableTimeOut: true}).toastId)
-        break;
-      case "warning":
-          this.showMessagesToastr.push(this.toastrService.warning(value.messageText, value.authorName, {disableTimeOut: true}).toastId)
-        break;
-    }
-  
-    if (this.showMessagesToastr.length > 3) {
-      this.toastrService.clear(this.showMessagesToastr[0])
-      this.showMessagesToastr.shift()
+      this.isAtBottomOfPage = false
     }
   }
 
   @HostListener('window:scroll', ['$event'])
   onScroll(event: Event) {
-    if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight) { // If at the bottom of page
-      this.wasAtBottomOfPage = true
-      // Clear every toastr
-      // for (let x = 0; x < this.showMessagesToastr.length; x++){
-      //   this.toastrService.clear(this.showMessagesToastr[x])
-      // }
-      // this.showMessagesToastr = []
-    }
-    else{
-      this.wasAtBottomOfPage = false
-      if (window.scrollY < document.body.scrollHeight * 0.15 && !this.awaitForMessagesCallback && this.messagesPage-1 != this.messagesMaxPage) {
-        this.awaitForMessagesCallback = true
-        if (!this.wasLastAddedPageUp) {
+    if (window.scrollY > 0) {
+      if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight) { // If at the bottom of page
+        this.isAtBottomOfPage = true
+        this.circleBottomPositionAnim = "-100px"
+      }
+      else{
+        this.circleBottomPositionAnim = `${this.inputBarHeight+64}px`
+        this.isAtBottomOfPage = false
+        if (window.scrollY < document.body.scrollHeight * 0.15 && !this.awaitForMessagesCallback && this.messagesPage != this.messagesMaxPage) {
+          this.awaitForMessagesCallback = true
+          if (!this.wasLastAddedPageUp) {
+            this.messagesPage += 1
+          }
           this.messagesPage += 1
+          this.wasLastAddedPageUp = true
+          this.getMessages()
         }
-        this.messagesPage += 1
-        this.wasLastAddedPageUp = true
-        this.getMessages(this.messagesPage, true)
-      }
-      if (window.innerHeight + window.scrollY > document.body.scrollHeight * 0.85 && !this.awaitForMessagesCallback && this.messagesPage >= 2) {
-        this.awaitForMessagesCallback = true
-        this.messagesPage -= 1
-        if (this.wasLastAddedPageUp) {
+        if (window.innerHeight + window.scrollY > document.body.scrollHeight * 0.85 && !this.awaitForMessagesCallback && this.messagesPage >= 2) {
+          this.awaitForMessagesCallback = true
           this.messagesPage -= 1
+          if (this.wasLastAddedPageUp) {
+            this.messagesPage -= 1
+          }
+          this.wasLastAddedPageUp = false
+          this.getMessages()
         }
-        this.wasLastAddedPageUp = false
-        this.getMessages(this.messagesPage, false)
       }
+      this.messageHandler.setIsAtBottomOfPage(this.isAtBottomOfPage)
     }
   }
-
   @HostListener('document:keyup', ['$event'])
   onKeyUp (event: KeyboardEvent) {
     if (event.key == "PrintScreen") {
@@ -247,11 +173,41 @@ export class DirectMessagesComponent {
     let data: PostMessageDto = {channelId: this.channelId, messageText: "share", messageTypeEnum: messageTypeEnum.Share, replyToId: sharedMessageId}
     this.messageService.postMessage(data).pipe().subscribe()
   }
+  
+  setNewestMessage(){
+    if (this.messages.length > 0 && this.messages[this.messages.length-1].id > this.newestMessageId) {
+      this.newestMessageId = this.messages[this.messages.length-1].id
+      this.messageHandler.setMessages(this.messages, this.channelId, this.newestMessageId);
+    }
+  }
 
   takeToMessage(messageId: number){
-    let messages = this.messageElements.toArray()
-    let messageIndex = BinaryMessageSearchById(messages, messageId)
-    window.scrollTo(0, messages[messageIndex].getOffsetHeight() - (window.innerHeight/2));
-    messages[messageIndex].showAnimation()
+    if (messageId == this.newestMessageId) {
+      this.isAtBottomOfPage = true
+    }
+    if (this.messages.findIndex(x => x.id == messageId) == -1) {
+      this.messageService.getMessagesNearId(this.channelId, messageId, 50, 10).pipe(tap(x => {
+        if (x.page > this.messagesPage) {
+          this.wasLastAddedPageUp = false
+        }
+        this.messages = x.items
+        this.messagesMaxPage = x.totalPages
+        this.messagesPage = x.page
+        
+        setTimeout(() => {
+          let messages = this.messageElements.toArray()
+          let messageIndex = BinaryMessageSearchById(messages, messageId)
+          window.scrollTo(0, messages[messageIndex].getOffsetHeight() - (window.innerHeight/2));
+          messages[messageIndex].showAnimation()
+        }, 1);
+      }
+      )).subscribe()
+    }
+    else{
+      let messages = this.messageElements.toArray()
+      let messageIndex = BinaryMessageSearchById(messages, messageId)
+      window.scrollTo(0, messages[messageIndex].getOffsetHeight() - (window.innerHeight/2));
+      messages[messageIndex].showAnimation()
+    }
   }
 }

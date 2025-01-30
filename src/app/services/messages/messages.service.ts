@@ -94,6 +94,13 @@ export class MessagesService {
 
     return messages
   }
+
+  getMessagesNearId(channelId: string, messageId: number, pageSize: number, pageNumber: number){
+    return this.httpClient
+    .get<PagedResult<MessageDto>>(
+      `${environment.apiUrl}/message/${channelId}/${messageId}?pageSize=${pageSize}&pageNumber=${pageNumber}`,
+      {responseType: "json", headers: this.authHeader.getAuthenticationHeader()})
+  }
   
   postMessage(messageDto: PostMessageDto) {
     return this.httpClient
