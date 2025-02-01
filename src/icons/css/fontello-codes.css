@@ -5,3 +5,5 @@
 .icon-heart--filled:before { content: '\e803'; } /* '' */
 .icon-trash-empty:before { content: '\e80c'; } /* '' */
 .icon-docs:before { content: '\f0c5'; } /* '' */
+.icon-reply:before { content: '\f112'; } /* '' */
+.icon-share:before { content: '\f1e0'; } /* '' */

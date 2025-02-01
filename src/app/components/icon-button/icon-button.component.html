@@ -1,4 +1,11 @@
-<div class="w-8 h-8 text-2xl flex justify-center items-center hover:bg-background-dark rounded-lg" 
-            [ngClass]="icon" 
-            (click)="clicked.emit(true)">
+<div class="text-2xl flex justify-center items-center bg-grey" 
+        [class]="icon"
+        [ngClass]="{
+            'cursor-pointer hover:bg-background-dark': !disabled,
+            'w-16 h-16': large,
+            'w-8 h-8': !large,
+            'rounded-full': round,
+            'rounded-lg': !round
+          }"
+        (click)="disabled ? '' : clicked.emit(true)">
 </div>

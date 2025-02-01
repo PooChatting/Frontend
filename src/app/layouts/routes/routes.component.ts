@@ -10,6 +10,12 @@ export const APP_LAYOUT_ROUTES: Routes = [
       .then(m => m.DirectMessagesComponent)
   },
   {
+    path: 'dm',
+    canActivate: [IsLoggedGuard],
+    loadComponent: () => import('../../views/direct-messages/direct-messages.component')
+      .then(m => m.DirectMessagesComponent)
+  },
+  {
     path: 'login',
     loadComponent: () => import('../../views/login/login.component')
       .then(m => m.LoginComponent)

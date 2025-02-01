@@ -1,11 +1,35 @@
-
-<div class="flex flex-col relative pb-3" [style]="{'padding-top': (inputBarHeight+24)+'px', 'top': '-'+(inputBarHeight+24)+'px'}">
-    <app-text-message #message *ngFor="let message of messages" [messageDto]="message"></app-text-message>
+<div class="flex">
+    <app-channels-pick class="h-screen w-24 sticky z-50"></app-channels-pick>
+    <div class="h-full flex-1">
+        <div class="flex flex-col relative">
+            <app-text-message #message 
+                *ngFor="let message of messages" 
+                [messageDto]="message" 
+                (clickOnRepliedMessage)="takeToMessage($event)" 
+                (deletedMessage)="deleteMessage(message)" 
+                (editedMessage)="editMessage(message, $event)" 
+                (sharedMessage)="shareMessage($event)"
+                (replyMessage)="inputReplyMessage = message">
+            </app-text-message>
+            <app-icon-button 
+                [style.bottom]="circleBottomPositionAnim"
+                class="fixed transition-all duration-300 right-10 z-10" 
+                icon="icon-heart--empty" 
+                [round]="true"
+                [large]="true"
+                (clicked)="takeToMessage(newestMessageId)">
+            </app-icon-button>
+        </div>
+    
+        <div class="sticky bottom-0 pb-6 left-0 w-full bg-background-base">
+            <app-text-input 
+                (inputHeight)="inputBarHeight = $event"
+                (sendMessage)="sendMessage($event)"
+                [replyMode]="inputReplyMessage"
+                (removeReplyMode)="inputReplyMessage = undefined"
+                class="z-20 px-10 flex flex-col"
+                >
+            </app-text-input>
+        </div>
+    </div>
 </div>
-
-<app-text-input 
-        (inputHeight)="inputBarHeight = $event"
-        (sendMessage)="sendMessage($event)"
-        class="fixed bottom-6 left-[2.5rem] w-[calc(100%-5rem)]"
-        >
-</app-text-input>

@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Share this pooMessage</h2>
+<mat-dialog-content>
+  <mat-dialog-actions>
+    <button (click)="Share.emit(TwitterType)" [mat-dialog-close] mat-button>Click to share to Twitter</button>
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="Share.emit(TelegramType)" [mat-dialog-close] mat-button>Click to share to Telegram</button>
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="Share.emit(EmailType)" [mat-dialog-close] mat-button>Click to share to Email</button>
+  </mat-dialog-actions>
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button mat-button [mat-dialog-close] cdkFocusInitial>Close</button>
+</mat-dialog-actions>

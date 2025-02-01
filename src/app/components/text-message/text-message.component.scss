@@ -5,3 +5,18 @@
 app-text-input{
     @apply w-[calc(100vw-9.5rem)] rounded-lg bg-background-dark
 }
+.showAnim {
+	@apply animate-[showAnimation_1s_1_forwards_ease-in-out];
+}
+
+@keyframes showAnimation {
+	0% {
+		background-color: #d2d3dd;
+	}
+	50% {
+		background-color: #9394a5;
+	}
+	100% {
+		background-color: #d2d3dd;
+	}
+}

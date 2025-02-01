@@ -1,3 +1,5 @@
+import { messageTypeEnum } from "../enums/MessageTypeEnum";
+
 export interface MessageDto {
   id : number,
   authorId : number,
@@ -6,5 +8,9 @@ export interface MessageDto {
   channelId : number,
   messageText : string,
   publication : string,
-  wasEdited : boolean
+  wasEdited : boolean,
+  messageTypeEnum: messageTypeEnum,
+  replyToId?: number,
+  hadBeenRead: boolean
+  waitingToPost?: boolean
 }

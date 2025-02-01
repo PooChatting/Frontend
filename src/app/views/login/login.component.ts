@@ -101,7 +101,9 @@ export class LoginComponent {
     else{
       let dto : LoginDto = {email: email, password: password}
       this.authService.login(dto).pipe(
-        tap(x => {}), // Everything's ok
+        tap(x => {
+          this.routerService.navigateByUrl("/dm/")
+        }), // Everything's ok
         catchError(async (err) => console.log(err.error))
       ).subscribe()
     }
