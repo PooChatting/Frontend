@@ -42,8 +42,6 @@ export class DirectMessagesComponent {
   private messageHandler = inject(MessageHandlerService)
 
   getMessages(){
-    this.activatedRoute.paramMap.subscribe(params => {
-    this.channelId = params.get('id')!
     this.messageService.getMessagesFromChannel(this.channelId, 50, this.messagesPage == -1 ? 1 : this.messagesPage)
       .pipe(
         tap(x => {
@@ -68,7 +66,6 @@ export class DirectMessagesComponent {
           this.setNewestMessage()
         })
       ).subscribe()
-    });
   }
 
   ngAfterViewInit() {
@@ -78,20 +75,16 @@ export class DirectMessagesComponent {
     }
 
     this.messageHandler.messageServiceInitializer()
-
-    // TEMPORARY FIX !!!
-    setTimeout(() => {
-        let savedMessages = this.messageService.getSavedMessages(this.channelId)
-        
-        if (savedMessages != null && savedMessages.length != 0) {
-          this.messages = savedMessages
-        }
-    }, 1);
     
     setTimeout(() => {
       this.messagesPage = -1
       this.wasLastAddedPageUp = true
-      this.getMessages()
+      this.activatedRoute.paramMap.subscribe(params => {
+        this.channelId = params.get('id')!
+      })
+      if (this.channelId != null) {
+        this.getMessages()
+      }
     }, 500);
     
     this.messageHandler.messages$.subscribe((updatedMessages) => {

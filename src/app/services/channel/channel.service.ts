@@ -3,6 +3,7 @@ import { inject, Injectable } from "@angular/core";
 import { environment } from "../../../environments/environments";
 import { AuthHeader } from "../authenticationHeader.service";
 import { AuthService } from "../account/auth.service";
+import { ChannelDto } from "../../shared/dtos/ChannelDto";
 
 @Injectable({
   providedIn: 'root'
@@ -22,14 +23,14 @@ export class ChannelService {
 
   checkIfUpToDate(channelId: string) {
     return this.httpClient
-      .get(
+      .get<boolean>(
         `${environment.apiUrl}/channel/${channelId}/isUpToDate`,
         {headers: this.authHeader.getAuthenticationHeader()})
   }
 
   getUserChannels(){
     return this.httpClient
-      .get(
+      .get<ChannelDto[]>(
         `${environment.apiUrl}/channel/user`,
         {headers: this.authHeader.getAuthenticationHeader()})
   }

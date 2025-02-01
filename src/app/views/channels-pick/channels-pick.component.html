@@ -1,1 +1,3 @@
-<div class="h-full w-1/12 bg-blue fixed"></div>
+<div class="h-full w-24 bg-blue fixed flex flex-col p-2">
+    <app-channel-button *ngFor="let channel of channelslist" [channel]="channel"></app-channel-button>
+</div>

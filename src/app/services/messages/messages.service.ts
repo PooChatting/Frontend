@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { Observable, of, switchMap, tap } from "rxjs";
+import { catchError, Observable, of, pipe, switchMap, tap, throwError } from "rxjs";
 import { MessageDto } from "../../shared/dtos/MessageDto";
 import { environment } from "../../../environments/environments";
 import { AuthHeader } from "../authenticationHeader.service";
@@ -9,6 +9,7 @@ import { PutMessageDto } from "../../shared/dtos/PutMessageDto";
 import { PagedResult } from "../../shared/dtos/PagedResult";
 import { ChannelService } from "../channel/channel.service";
 import { AuthService } from "../account/auth.service";
+import { Router } from "@angular/router";
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +21,7 @@ export class MessagesService {
   private authHeader = inject(AuthHeader)
   private channelService = inject(ChannelService)
   private authService = inject(AuthService)
+  private routerService = inject(Router)
   
   saveMessages(channel: string, messages: MessageDto[]) {
     localStorage.setItem(`${channel}savedMessages`, JSON.stringify(messages));
@@ -33,14 +35,27 @@ export class MessagesService {
     localStorage.setItem(`${channel}savedMessages`, JSON.stringify(messages));
   }
 
-  getSavedMessages(channel: string): MessageDto[] | null {
+  getSavedMessages(channel: string): Observable<PagedResult<MessageDto>> | null {
     let saved = localStorage.getItem(`${channel}savedMessages`)!
-    return JSON.parse(saved)
+
+    if (saved == "") {
+      return null
+    }
+    let pagedResults: PagedResult<MessageDto> = {
+      items: JSON.parse(saved),
+      page: 1,
+      totalItems: 300,
+      totalPages: 100
+    };
+    return of(pagedResults);
   }
 
   getNewestSavedMessage(channel: string): MessageDto | null {
     let saved = localStorage.getItem(`${channel}savedMessages`)!
     let messages = JSON.parse(saved) as MessageDto[]
+    if (messages == null) {
+      return null
+    }
     return messages[messages.length-1]
   }
 
@@ -48,31 +63,15 @@ export class MessagesService {
     if (pageNumber == 1) {
       let newest = this.getNewestSavedMessage(channelId)
       if (newest?.authorId == this.authService.getJwtData()?.id && newest?.hadBeenRead == true) {
-        let savedMessages = this.getSavedMessages(channelId);
-
-        let pagedResults: PagedResult<MessageDto> = {
-          items: savedMessages!,
-          page: 1,
-          totalItems: 300,
-          totalPages: 100
-        };
-        return of(pagedResults);
+        return this.getSavedMessages(channelId)!;
       }
-      return this.channelService.checkIfUpToDate(channelId).pipe(
-        switchMap((isUpToDate) => {
+      this.channelService.checkIfUpToDate(channelId).pipe(
+        tap((isUpToDate) => {
+          
           if (isUpToDate) {
-            let savedMessages = this.getSavedMessages(channelId);
-            
-            if (savedMessages != null && savedMessages.length != 0) {
-              let pagedResults: PagedResult<MessageDto> = {
-                items: savedMessages,
-                page: 1,
-                totalItems: 300,
-                totalPages: 100
-              };
-              return of(pagedResults);
-            }
+            return this.getSavedMessages(channelId)!;
           }
+          
           let messages = this.httpClient.get<PagedResult<MessageDto>>(
             `${environment.apiUrl}/message/channel/${channelId}?pageSize=${pageSize}&pageNumber=${pageNumber}`,
             { responseType: "json", headers: this.authHeader.getAuthenticationHeader() }
@@ -83,8 +82,17 @@ export class MessagesService {
             }
           )).subscribe()
           return messages
+        }),
+        catchError(err => {
+          if (err.status == 401) {
+            this.routerService.navigateByUrl("/login")
+          }
+          if (err.status == 403) {
+            this.routerService.navigateByUrl("/dm")
+          }
+          return ""
         })
-      );
+      ).subscribe();
     }
 
     let messages = this.httpClient

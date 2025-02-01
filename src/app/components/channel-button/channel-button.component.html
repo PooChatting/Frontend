@@ -1,0 +1,9 @@
+<div class="w-full aspect-square rounded-[50%] hover:rounded-[15%] bg-slate-50 transition-all cursor-pointer" 
+        (mouseenter)="isUserHovering = true" 
+        (mouseleave)="isUserHovering = false" 
+        [routerLink]="'/dm/' + channel?.id">
+    
+    <div class="w-max h-8 px-[10px] pt-1 rounded-md absolute bg-grey text-background-base" *ngIf="isUserHovering" [ngStyle]="{'left.px': tagPostion.x, 'top.px': tagPostion.y}">
+        {{channel?.otherUserInChannel?.username}}
+    </div>
+</div>
